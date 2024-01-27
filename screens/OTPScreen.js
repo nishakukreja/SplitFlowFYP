@@ -1,17 +1,53 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import OTPTextView from "react-native-otp-textinput";
+import React, {useState} from 'react';
+import {View, StyleSheet, Text, Alert} from 'react-native';
+import OTPTextView from 'react-native-otp-textinput';
 import Custombutton from '../components/Custombutton';
-import { Colors } from '../constants/Colors';
-import { responsiveHeight } from 'react-native-responsive-dimensions';
+import {Colors} from '../constants/Colors';
+import {responsiveHeight} from 'react-native-responsive-dimensions';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {allowedAddresses} from '../IPConfig';
+import axios from 'axios';
 
-const OTPScreen = ({ navigation }) => {
-  const [otpCode, setOtpCode] = useState("");
+const OTPScreen = () => {
+  const [otpCode, setOtpCode] = useState('');
+
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  const verifyOtp = async () => {
+    try {
+      const bodyData = {
+        otpCode: otpCode,
+        emailAddress: route.params.emailAddress,
+      };
+      const apiResponse = await axios
+        .post(`${allowedAddresses.ip}/auth/user/verify-otp`, bodyData)
+        .then(onSuccess => {
+          console.log('send otp success: ', onSuccess.data);
+          navigation.replace('NewPasswordScreen', {
+            emailAddress: route.params.emailAddress,
+            userId: route.params.userId,
+          });
+        })
+        .catch(onError => {
+          console.log('on error otp sending: ', onError.response.data.message);
+          if (onError.response.data.statusCode == 400) {
+            console.log('j');
+            Alert.alert('Oops', onError.response.data.message);
+          } else if (onError.response.data.statusCode == 401) {
+            Alert.alert('Oops', onError.response.data.message);
+          }
+        });
+    } catch (error) {
+      console.log('error in verifying otp: ', error.response.data);
+    }
+  };
 
   const handleVerify = () => {
     // Add logic to verify OTP, navigate to ResetPasswordScreen if successful
     // For simplicity, let's assume OTP verification is successful
-    navigation.navigate('NewPasswordScreen');
+    // navigation.navigate('NewPasswordScreen');
+    verifyOtp();
   };
 
   return (
@@ -20,7 +56,7 @@ const OTPScreen = ({ navigation }) => {
 
       <View style={styles.otpInputContainer}>
         <OTPTextView
-          handleTextChange={(otpText) => {
+          handleTextChange={otpText => {
             setOtpCode(otpText);
           }}
           containerStyle={styles.textInputContainer}
@@ -53,8 +89,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color:'black',
-    fontFamily: "serif",
+    color: 'black',
+    fontFamily: 'serif',
   },
   otpInputContainer: {
     marginBottom: 20,

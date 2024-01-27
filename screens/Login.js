@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Image,
+  StyleSheet,
+  Alert,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import Custombutton from '../components/Custombutton';
-import { useNavigation } from '@react-navigation/native';
-import { useForm, Controller } from 'react-hook-form';
+import {useNavigation} from '@react-navigation/native';
+import {useForm, Controller} from 'react-hook-form';
 import Custominput from '../components/Custominput';
-import { allowedAddresses } from '../IPConfig';
+import {allowedAddresses} from '../IPConfig';
 import axios from 'axios';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -15,10 +22,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
-  const { control, handleSubmit } = useForm();
+  const {control, handleSubmit} = useForm();
   const navigation = useNavigation();
 
-  const onLoginPressed = async (data) => {
+  const onLoginPressed = async data => {
     if (loading) {
       return;
     }
@@ -30,14 +37,21 @@ const Login = () => {
         password: data.password,
       };
 
-      console.log("login data: ", loginData);
+      console.log('login data: ', loginData);
 
-      const apiResponse = await axios.post(`${allowedAddresses.ip}/auth/user/login`, loginData);
+      const apiResponse = await axios.post(
+        `${allowedAddresses.ip}/auth/user/login`,
+        loginData,
+      );
       if (apiResponse.data.status === 200) {
-        Alert.alert(apiResponse.data.message);
+        // Alert.alert(apiResponse.data.message);
+
+        console.log('apiResponse.data.message: ', apiResponse.data);
 
         // Navigate to the Home screen
-        navigation.navigate('Home');
+        navigation.replace('Home', {
+          user: apiResponse.data.data.user,
+        });
       } else {
         console.log(apiResponse.data.message);
         Alert.alert(apiResponse.data.message);
@@ -98,8 +112,7 @@ const Login = () => {
       <View style={styles.forgotPasswordContainer}>
         <Text
           style={styles.forgotPasswordText}
-          onPress={onForgotPasswordPressed}
-        >
+          onPress={onForgotPasswordPressed}>
           Forgot password?
         </Text>
       </View>
@@ -107,7 +120,7 @@ const Login = () => {
       <Custombutton
         text={loading ? 'Loading...' : 'Login'}
         onPress={handleSubmit(onLoginPressed)}
-        style={{ marginVertical: 50 }}
+        style={{marginVertical: 50}}
       />
 
       <TouchableOpacity onPress={onGoogleSignInPressed}>
@@ -117,8 +130,14 @@ const Login = () => {
       <Custombutton
         text={
           <Text>
-            <Text>Don't have an account?{' '}</Text>
-            <Text style={{ fontWeight: 'bold', color: '#6146C6', fontSize: 15, textDecorationLine: 'underline' }}>
+            <Text>Don't have an account? </Text>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                color: '#6146C6',
+                fontSize: 15,
+                textDecorationLine: 'underline',
+              }}>
               Signup
             </Text>
           </Text>

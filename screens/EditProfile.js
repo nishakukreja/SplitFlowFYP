@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
-import { View, TextInput, Image, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  TextInput,
+  Image,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {allowedAddresses} from '../IPConfig';
 
-const EditProfile = ({ navigation }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [gender, setGender] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [choosePictureModalVisible, setChoosePictureModalVisible] = useState(false);
- 
+const EditProfile = () => {
+  const route = useRoute();
+  const navigation = useNavigation();
+
+  console.log('route: ', route.params.user);
+
+  const [firstName, setFirstName] = useState(route.params.user?.firstName);
+  const [lastName, setLastName] = useState(route.params.user.lastName);
+  const [email, setEmail] = useState(route.params.user.emailAddress);
+  const [gender, setGender] = useState(route.params.user.gender);
+  const [phoneNumber, setPhoneNumber] = useState(route.params.user.phoneNo);
+  const [choosePictureModalVisible, setChoosePictureModalVisible] =
+    useState(false);
+
   const [loading, setLoading] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [selectedImageBase64, setSelectedImageBase64] = useState('');
@@ -101,7 +118,7 @@ const EditProfile = ({ navigation }) => {
             placeholderTextColor="black"
             fontSize={16}
             value={firstName}
-            onChangeText={(text) => setFirstName(text)}
+            onChangeText={text => setFirstName(text)}
           />
         </View>
 
@@ -110,11 +127,10 @@ const EditProfile = ({ navigation }) => {
           <TextInput
             placeholder="Last Name"
             style={styles.input}
-            keyboardType="LastName"
             placeholderTextColor="black"
             fontSize={16}
             value={lastName}
-            onChangeText={(text) => setLastName(text)}
+            onChangeText={text => setLastName(text)}
           />
         </View>
       </View>
@@ -128,7 +144,7 @@ const EditProfile = ({ navigation }) => {
           keyboardType="email-address"
           fontSize={16}
           value={email}
-          onChangeText={(text) => setEmail(text)}
+          onChangeText={text => setEmail(text)}
         />
       </View>
 
@@ -140,11 +156,11 @@ const EditProfile = ({ navigation }) => {
           placeholderTextColor="black"
           fontSize={16}
           value={gender}
-          onChangeText={(text) => setGender(text)}
+          onChangeText={text => setGender(text)}
         />
       </View>
 
-      <View style={styles.inputRow}>
+      {/* <View style={styles.inputRow}>
         <FontAwesomeIcon name="phone" style={styles.icon} />
         <TextInput
           placeholder="Phone Number"
@@ -153,9 +169,9 @@ const EditProfile = ({ navigation }) => {
           placeholderTextColor="black"
           fontSize={16}
           value={phoneNumber}
-          onChangeText={(text) => setPhoneNumber(text)}
+          onChangeText={text => setPhoneNumber(text)}
         />
-      </View>
+      </View> */}
 
       <TouchableOpacity style={styles.doneButton} onPress={handleDonePress}>
         <Text style={styles.buttonText}>Done</Text>
@@ -165,8 +181,7 @@ const EditProfile = ({ navigation }) => {
         animationType="slide"
         transparent={true}
         visible={choosePictureModalVisible}
-        onRequestClose={hideChoosePictureModal}
-      >
+        onRequestClose={hideChoosePictureModal}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Choose an Option</Text>
           <Pressable
@@ -174,8 +189,7 @@ const EditProfile = ({ navigation }) => {
             onPress={() => {
               openCamera();
               hideChoosePictureModal();
-            }}
-          >
+            }}>
             <Text style={styles.optionText}>Take a Photo</Text>
           </Pressable>
           <Pressable
@@ -183,11 +197,12 @@ const EditProfile = ({ navigation }) => {
             onPress={() => {
               openGallery();
               hideChoosePictureModal();
-            }}
-          >
+            }}>
             <Text style={styles.optionText}>Choose from Gallery</Text>
           </Pressable>
-          <Pressable style={styles.closeButton} onPress={hideChoosePictureModal}>
+          <Pressable
+            style={styles.closeButton}
+            onPress={hideChoosePictureModal}>
             <Text style={styles.closeButtonText}>Cancel</Text>
           </Pressable>
         </View>
