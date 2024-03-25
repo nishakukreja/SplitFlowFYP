@@ -18,9 +18,9 @@ const Settings = () => {
 
   const options = [
     { icon: 'edit', title: 'AccountDetail', screen: 'AccountDetail' },
-    { icon: 'settings', title: 'Two factor Authentication', screen: 'Two factor Authentication' },
-    { icon: 'notifications-on', title: 'Change Password', screen: 'Change Password' },
-    { icon: 'sign-out', title: 'Privacy and Policy' , screen: 'Privacy and Policy'},
+    { icon: 'settings', title: 'Two Factor Authentication', screen: 'TwoFactorAuthentication' },
+    { icon: 'password', title: 'Change Password', screen: 'Change Password' },
+    { icon: 'privacy-tip', title: 'Privacy and Policy' , screen: 'Privacy and Policy'},
   ];
 
   return (
@@ -48,11 +48,11 @@ const getOptionIcon = (iconName) => {
     case 'edit':
       return <FontAwesomeIcon name={iconName} style={styles.icon} />;
     case 'settings':
-      return <IoniconsIcon name={iconName} style={styles.icon} />;
-    case 'notifications-on':
       return <MaterialIconsIcon name={iconName} style={styles.icon} />;
-    case 'sign-out':
-      return <FontAwesomeIcon name={iconName} style={styles.icon} />;
+    case 'password':
+      return <MaterialIconsIcon name={iconName} style={styles.icon} />;
+    case 'privacy-tip':
+      return <MaterialIconsIcon name={iconName} style={styles.icon} />;
     default:
       return null;
   }

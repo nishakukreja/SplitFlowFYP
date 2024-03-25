@@ -6,77 +6,87 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  FlatList,
 } from 'react-native';
 import {ProgressCircle} from 'react-native-svg-charts';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import {Card, Avatar} from 'react-native-elements';
 import * as Progress from 'react-native-progress';
 import {useNavigation, useRoute} from '@react-navigation/native';
+// import BottomTabs from '../navigation/BottomTabs';
 const bellIconName = 'bell';
 
-const ProgressBar = ({progress, tasksCompleted}) => (
-  <View>
-    <View
-      style={{
-        backgroundColor: '#756AB6',
-        borderRadius: 18,
-        overflow: 'hidden',
-        width: 333,
-        height: 180,
-        position: 'relative',
-        marginBottom: 399,
-      }}>
-      <Text
-        style={{
-          marginLeft: 151,
-          fontFamily: 'serif',
-          position: 'absolute',
-          fontWeight: 'bold',
-          marginTop: 22,
-          fontSize: 22,
-        }}>
-        Task Progress
-      </Text>
-      <ProgressCircle
-        // style={styles.circle}
-        progress={progress}
-        progressColor="#AC87C5"
-        strokeWidth={10}
-        style={{
-          width: 107.5,
-          height: 110,
-          position: 'absolute',
-          marginLeft: 39,
-          top: 30,
-        }}
-      />
-      <Text
-        style={{
-          fontWeight: 'bold',
-          marginLeft: 12,
-          fontFamily: 'serif',
-          position: 'absolute',
-          marginLeft: 160,
-          top: 60,
-        }}>
-        {Math.round(progress * 100)}%
-      </Text>
-      <Text
-        style={{
-          fontWeight: 'bold',
-          marginLeft: 12,
-          fontFamily: 'serif',
-          position: 'absolute',
-          marginLeft: 160,
-          top: 90,
-          fontSize: 12,
-        }}>
-        {tasksCompleted}/10 Tasks Completed
-      </Text>
-    </View>
-  </View>
-);
+const ProgressBar = ({ progress, tasksCompleted }) => {
+  const navigation = useNavigation(); 
 
+  const handlePress = () => {
+    navigation.navigate('TaskDetailScreen');
+  };
+  
+  return (
+    <TouchableOpacity onPress={handlePress}>
+      <View
+        style={{
+          backgroundColor: '#756AB6',
+          borderRadius: 18,
+          overflow: 'hidden',
+          width: 333,
+          height: 180,
+          position: 'relative',
+          marginBottom: 399,
+        }}>
+        <Text
+          style={{
+            marginLeft: 151,
+            fontFamily: 'serif',
+            position: 'absolute',
+            fontWeight: 'bold',
+            marginTop: 22,
+            fontSize: 22,
+          }}>
+          Task Progress
+        </Text>
+        {/* Ensure ProgressCircle component does not render text strings */}
+        <ProgressCircle
+          progress={progress}
+          progressColor="#AC87C5"
+          strokeWidth={10}
+          style={{
+            width: 107.5,
+            height: 110,
+            position: 'absolute',
+            marginLeft: 39,
+            top: 30,
+          }}
+        />
+        <Text
+          style={{
+            fontWeight: 'bold',
+            marginLeft: 12,
+            fontFamily: 'serif',
+            position: 'absolute',
+            left: 160,
+            top: 60,
+          }}>
+          {Math.round(progress * 100)}%
+        </Text>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            marginLeft: 12,
+            fontFamily: 'serif',
+            position: 'absolute',
+            left: 160,
+            top: 90,
+            fontSize: 12,
+          }}>
+          {tasksCompleted}/10 Tasks Completed
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 const Home = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const navigation = useNavigation();
@@ -84,6 +94,7 @@ const Home = () => {
 
   const handleCarouselItemPress = index => {
     setCarouselIndex(index);
+
   };
 
   const navigateToProfile = () => {
@@ -91,15 +102,35 @@ const Home = () => {
       user: route.params.user,
     });
   };
-
+  const navigateToViewAllScreen = () => {
+    navigation.navigate('ViewAllScreen'); // Replace 'ViewAllScreen' with the name of your view all screen component
+  };
   const navigateToNotifications = () => {
     navigation.navigate('Notification');
   };
 
-  const navigateToNewTask = () => {
-    navigation.navigate('NewTaskScreen');
-  };
 
+  // const navigateToNewTask = () => {
+  //   navigation.navigate('NewTaskScreen');
+  // };
+  
+
+  // const navigateToChatScreen = () => {
+  //   navigation.navigate('ChatScreen');
+  // };
+  // const navigateToSearchScreen = () => {
+  //   navigation.navigate('SearchScreen');
+  // };
+  const categories = [
+    { label: 'All', icon: 'circle' },
+    { label: 'Photography', icon: 'camera' },
+    { label: 'Food', icon: 'cutlery' },
+    { label: 'Weddings', icon: 'heart' },
+    { label: 'Events', icon: 'calendar' },
+    { label: 'Music', icon: 'music' },
+    { label: 'Decor', icon: 'tree' },
+    { label: 'Others', icon: 'ellipsis-h' },
+  ];
   return (
     <ScrollView style={{flex: 1, backgroundColor: '#F5FCFF'}}>
       <View style={styles.container}>
@@ -146,34 +177,78 @@ const Home = () => {
           }}>
           <View style={styles.carouselItem}>
             <Text>First Carousel Item</Text>
-            <ProgressBar progress={0.6} tasksCompleted={7} />
+            <ProgressBar progress={0.9} tasksCompleted={7} />
           </View>
           <View style={styles.carouselItem}>
             <Text>Second Carousel Item</Text>
             <ProgressBar progress={0.5} tasksCompleted={5} />
           </View>
         </ScrollView>
-
-        <TouchableOpacity
+        <ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  style={styles.categoryContainer}
+>
+  {categories.map((category, index) => (
+    <TouchableOpacity
+      key={index}
+      style={[
+        styles.categoryChip,
+        index === carouselIndex && styles.selectedCategory,
+      ]}
+      onPress={() => handleCarouselItemPress(index)}
+    >
+      <FontAwesome
+        name={category.icon}
+        size={18}
+        color={index === carouselIndex ? '#FFF' : '#000'}
+        style={styles.categoryIcon}
+      />
+    </TouchableOpacity>
+  ))}
+</ScrollView>
+        {/* <TouchableOpacity
           onPress={navigateToNewTask}
           style={styles.newTaskButton}>
           <FontAwesome name="plus-circle" size={40} color="#756AB6" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+        {/* <TouchableOpacity
+          onPress={navigateToChatScreen}
+          style={styles.chatButton}>
+          <FontAwesome name="wechat" size={40} color="#756AB6" />
+        </TouchableOpacity> */}
+      {/* <TouchableOpacity
+          onPress={navigateToSearchScreen}
+          style={styles.chatButton}>
+          <AntDesign name="search1" size={40} color="black" />
+        </TouchableOpacity> */}
+
       </View>
 
       <RecentProjects />
-
+      
       <TodayTasks />
+      {/* <BottomTabs /> */}
     </ScrollView>
   );
 };
-
 const RecentProjects = () => {
+  const navigation = useNavigation();
+
+  const handleViewAllPress = () => {
+    navigation.navigate('ViewAllScreen'); // Replace 'ViewAllScreen' with the actual name of your view all screen
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Suggested Tasks</Text>
-        <Text style={styles.viewAll}>View All</Text>
+        <Text style={styles.headerText} >Suggested Tasks</Text>
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={handleViewAllPress}>
+          <Text style={styles.viewAllButtonText}>View All</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.projectContainer}>
@@ -243,11 +318,19 @@ const RecentProjects = () => {
 };
 
 const TodayTasks = () => {
+  const navigation = useNavigation(); // Get the navigation object
+
+  const handleViewAllPress = () => {
+    navigation.navigate('AllTaskScreen'); // Navigate to the AllTasksScreen
+  };
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, {marginBottom: -10, marginTop: 1}]}>
         <Text style={styles.headerText}>Today Tasks</Text>
-        <Text style={styles.viewAll}>ViewAll</Text>
+        <TouchableOpacity onPress={handleViewAllPress}>
+          <Text style={styles.viewAll}>View All</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -276,11 +359,14 @@ const TodayTasks = () => {
               Decoration
             </Text>
             <Text style={{color: 'black', fontFamily: 'serif'}}>Sep 8</Text>
+            
           </View>
         </View>
       </View>
+      
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -384,7 +470,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     fontFamily: 'serif',
-    marginBottom: -8,
+    marginBottom: -21,
   },
   viewAll: {
     color: '#6146C6',
@@ -438,13 +524,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 10,
+    padding: 0,
   },
   task: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ddd',
-    marginVertical: 5,
+    marginVertical: 12,
   },
   checkbox: {
     width: 40,
@@ -520,7 +606,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     marginHorizontal: 10,
+  }, 
+  chatButton: {
+    position: 'absolute',
+    bottom: -9,
+    left: -6,
   },
+  categoryContainer: {
+    marginTop: 10,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 19,
+    paddingVertical: 15,
+    borderRadius: 70,
+    marginRight: 10,
+    backgroundColor: '#E0E0E0',
+
+  },
+  selectedCategory: {
+    backgroundColor: '#6146C6',
+  },
+  categoryIcon: {
+    marginRight: 2,
+    marginLeft:2,
+  },
+  categoryLabel: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  selectedLabel: {
+    color: '#FFF',
+  },
+  viewAllButton: {
+    // backgroundColor: '#6146C6',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  viewAllButtonText: {
+    color: '#6146C6',
+    // fontWeight: 'bold',
+    fontSize: 16,
+    fontFamily:'serif'
+  },
+  categoryLabel: {
+    marginTop: 10,
+    fontSize: 16,
+    color: 'black',
+  },
+
+
 });
 
 export default Home;

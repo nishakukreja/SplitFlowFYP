@@ -20,17 +20,29 @@ import OTPScreen from './screens/OTPScreen';
 import { Provider } from 'react-redux';
 import { store } from './redux/Store';
 import Profile from './screens/Profile';
-
-
 import PlusScreen from './screens/PlusScreen';
 import Settings from './screens/Settings';
 import CheckEmail from './screens/CheckEmail';
 import Notification from './screens/Notification';
-import BottomTabs from './navigation/BottomTabs';
 import NewTaskScreen from './screens/NewTaskScreen'
 import DoneTask from './screens/DoneTask';
 import PasswordChange from './screens/PasswordChange';
 import EditProfile from './screens/EditProfile';
+import ChatScreen from './screens/ChatScreen';
+import ViewAllScreen from './screens/ViewAllScreen';
+import AllTaskScreen from './screens/AllTaskScreen';
+import TaskDetailScreen from './screens/TaskDetailScreen';
+import SearchScreen from './screens/SearchScreen';
+import TwoFactorAuthentication from './screens/TwoFactorAuthentication';
+import UserScreen from './screens/UserScreen';
+import StepScreen from './screens/StepScreen';
+import TwoFactorVerification from './screens/TwoFactorVerification';
+import BackupScreen from './screens/BackupScreen';
+import HomeTabs from './navigation/HomeTabs';
+// import BottomTabs from './navigation/BottomTabs';
+// import UserIdContext from './components/UserIdContext';
+import { UserIdProvider } from './components/UserIdContext';
+import FinishScreen from './screens/FinishScreen';
 const Stack = createStackNavigator();
 
 function App() {
@@ -40,7 +52,7 @@ function App() {
 
   return (
     <Provider store={store}>
-
+      <UserIdProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Splash'>
       <Stack.Screen name="Welcome" component={Welcome}
@@ -92,11 +104,11 @@ function App() {
          options={{
           headerShown: false
         }} />
-        <Stack.Screen name="Home" component={Home} 
+        {/* <Stack.Screen name="Home" component={Home} 
         options={{
           headerShown: false
         }}
-       />
+       /> */}
 
 <Stack.Screen name="SendAndVerifyOTP" component={OTPScreen}
         options={{
@@ -125,9 +137,9 @@ function App() {
         }}
          />
            <Stack.Screen name="Notification" component={Notification} 
-        //  options={{
-        //   headerShown: false
-        // }}
+         options={{
+          headerShown: false
+        }}
         />
         
         <Stack.Screen name="NewTaskScreen" component={NewTaskScreen} 
@@ -156,10 +168,80 @@ function App() {
         options={{
           headerShown: false
         }}  />
-            
+        <Stack.Screen name="ChatScreen" component={ChatScreen}
+        options={{
+          headerShown: false
+        }} 
+        
+         />
+             <Stack.Screen name="ViewAllScreen" component={ViewAllScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+         <Stack.Screen name="AllTaskScreen" component={AllTaskScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+       
+        <Stack.Screen name="TaskDetailScreen" component={TaskDetailScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+        
+        <Stack.Screen name="SearchScreen" component={SearchScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+
+<Stack.Screen name="TwoFactorAuthentication" component={TwoFactorAuthentication}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+        <Stack.Screen name="UserScreen" component={UserScreen}
+        // options={{
+        //   headerShown: false
+        // }} 
+        /> 
+        <Stack.Screen name="StepScreen" component={StepScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
+          <Stack.Screen name="TwoFactorVerification" component={TwoFactorVerification}
+        // options={{
+        //   headerShown: false
+        // }} 
+      
+        /> 
+         <Stack.Screen name="BackupScreen" component={BackupScreen}
+        options={{
+          headerShown: false
+        }} 
+        />
+        {/* <Stack.Screen name="BottomTabs" component={BottomTabs}
+        options={{
+          headerShown: false
+      }}
+/> */}
+<Stack.Screen name="HomeTabs" component={HomeTabs} 
+        options={{
+          headerShown: false
+        }}
+       />
+       <Stack.Screen name="FinishScreen" component={FinishScreen}
+        options={{
+          headerShown: false
+        }} 
+        /> 
              </Stack.Navigator>
            
     </NavigationContainer>
+    </UserIdProvider>
     </Provider>
   );
 }

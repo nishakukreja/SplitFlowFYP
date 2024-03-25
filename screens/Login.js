@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Image,
@@ -14,11 +14,12 @@ import Custominput from '../components/Custominput';
 import {allowedAddresses} from '../IPConfig';
 import axios from 'axios';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import UserIdContext from '../components/UserIdContext';
 import LogoImage from '../assets/images/logo.png';
 import GoogleImage from '../assets/images/google.png';
 
 const Login = () => {
+  const {setUserId} = useContext(UserIdContext);
   const [loading, setLoading] = useState(false);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
@@ -49,9 +50,12 @@ const Login = () => {
         console.log('apiResponse.data.message: ', apiResponse.data);
 
         // Navigate to the Home screen
-        navigation.replace('Home', {
-          user: apiResponse.data.data.user,
-        });
+        // navigation.replace('Home', {
+        //   user: apiResponse.data.data.user,
+        // });
+        navigation.navigate('HomeTabs',{
+          screen:'Home', params:{user: apiResponse.data.data.user}
+        })
       } else {
         console.log(apiResponse.data.message);
         Alert.alert(apiResponse.data.message);
