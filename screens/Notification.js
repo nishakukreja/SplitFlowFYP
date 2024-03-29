@@ -1,64 +1,106 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome icon
+import React from 'react';
+import { FlatList, Text, View, StatusBar, Image, ScrollView, StyleSheet,TouchableOpacity } from 'react-native';
 
-// Sample data for the notifications
 const notifications = [
   {
     id: '1',
-    title: 'Two new tasks were added',
-    icon: 'calendar',
-    date: '2024-02-04',
+    title: 'This is a notification title 1',
+    body: 'This is the notification content 1',
+    timestamp: new Date(),
+    source: require('../assets/images/female.png')
   },
   {
     id: '2',
-    title: 'Task deadline increased',
-    icon: 'envelope',
-    date: '2024-03-01',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/female.png')
   },
   {
     id: '3',
-    title: 'Completed your task',
-    icon: 'group',
-    date: '2024-03-10',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/femalee.png')
+  },
+
+  {
+    id: '4',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/male.png')
+  },
+  {
+    id: '5',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/malee.png')
+  },
+  {
+    id: '6',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/femaleee.png')
+  },
+  {
+    id: '7',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/maleee.png')
+  },
+  {
+    id: '8',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/womannn.png')
+  },
+  {
+    id: '9',
+    title: 'This is a notification title 2',
+    body: 'This is the notification content 2',
+    timestamp: new Date(),
+    source: require('../assets/images/man.png')
   },
 ];
 
+
 const Notification = () => {
-  // State for the notifications
-  const [notificationList, setNotificationList] = useState(notifications);
+  const handleTitlePress = (title) => {
+    // Do something with the selected title, such as navigating to a details screen
+    console.log('Selected Title:', title);
+  };
 
-  // Function to render each notification item
-  const renderItem = ({ item }) => {
-    // Convert the date string to a JavaScript Date object
-    const dateObject = new Date(item.date);
-
-    // Format the date as a string in the desired format
-    const formattedDate = dateObject.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-
-    return (
+  const renderItem = ({ item }) => (
+    <TouchableOpacity onPress={() => handleTitlePress(item.title)}>
       <View style={styles.notificationItem}>
-        {/* Use Icon component instead of Image */}
-        <Icon name={item.icon} size={40} style={styles.notificationIcon} />
+        <Image source={item.source} style={styles.avatar} />
         <View style={styles.notificationContent}>
           <Text style={styles.notificationTitle}>{item.title}</Text>
-          <Text style={styles.notificationDate}>{formattedDate}</Text>
+          <Text style={styles.notificationBody}>{item.body}</Text>
+          <Text style={styles.timestamp}>{item.timestamp.toLocaleString()}</Text>
         </View>
       </View>
-    );
-  };
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={notificationList}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      />
+      <StatusBar backgroundColor="#6146C6" barStyle="light-content" />
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Notifications</Text>
+      </View>
+      <ScrollView style={styles.notificationList}>
+        <FlatList
+          data={notifications}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+        />
+      </ScrollView>
     </View>
   );
 };
@@ -66,33 +108,52 @@ const Notification = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    backgroundColor: '#6146C6',
+    paddingVertical: 35,
+    paddingHorizontal: 120,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  headerText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+    alignItems:'center',
+  },
+  notificationList: {
+    flex: 1,
+    paddingTop: 10,
+    paddingHorizontal: 10,
   },
   notificationItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
-    marginVertical: 5,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderColor: '#ccc',
   },
-  notificationIcon: {
-    fontSize: 25,  
-    marginRight: 10,
-    color: '#6146C6', 
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
   },
   notificationContent: {
     flex: 1,
   },
   notificationTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
   },
-  notificationDate: {
-    fontSize: 14,
-    color: '#888',
+  notificationBody: {
+    fontSize: 16,
+    color: 'black',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#aaa',
   },
 });
 

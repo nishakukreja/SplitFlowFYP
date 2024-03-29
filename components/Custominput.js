@@ -1,10 +1,10 @@
-// Custominput.js
+// CustomInput.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Controller } from 'react-hook-form';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const Custominput = ({ control, name, rules = {}, placeholder, secureTextEntry, iconName }) => {
+const Custominput = ({ control, name, rules = {}, placeholder, secureTextEntry, iconName, editable }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   return (
@@ -26,8 +26,9 @@ const Custominput = ({ control, name, rules = {}, placeholder, secureTextEntry, 
               placeholder={placeholder}
               style={styles.input}
               secureTextEntry={!isPasswordVisible && secureTextEntry}
+              editable={editable} // Pass editable prop to TextInput
             />
-            {secureTextEntry && ( // Only show the eye icon for secureTextEntry (password) fields
+            {secureTextEntry && (
               <TouchableOpacity
                 style={styles.icon}
                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -46,6 +47,8 @@ const Custominput = ({ control, name, rules = {}, placeholder, secureTextEntry, 
     />
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
