@@ -15,6 +15,7 @@ const UploadPicture = ({ route }) => {
   const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [selectedImageBase64, setSelectedImageBase64] = useState("");
   const [isImageSelected, setIsImageSelected] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null); // Define apiResponse state
 
   const {
     personalDetails,
@@ -22,8 +23,6 @@ const UploadPicture = ({ route }) => {
     genderDetails,
     interestDetails
   } = route.params;
-
-  console.log("route upload picture: ", route.params);
 
   const openCamera = async () => {
     try {
@@ -107,6 +106,7 @@ const UploadPicture = ({ route }) => {
       console.log("compiled upload obj: ", uploadObj);
 
       const apiResponse = await axios.post(`${allowedAddresses.ip}/auth/user/sign-up`, uploadObj);
+      setApiResponse(apiResponse); // Store api response in state
 
       if (apiResponse.data.status === 200) {
         console.log("ok aa");
@@ -117,9 +117,14 @@ const UploadPicture = ({ route }) => {
     }
   }
 
-  const navigateToHome = async () => {
+  const navigateToHomeTabs = async () => {
     hideThankYouModal();
-    navigation.navigate("Home");
+    if (apiResponse) {
+      navigation.navigate('HomeTabs', {
+        screen: 'Home',
+        params: { user: apiResponse.data.data.user }
+      });
+    }
   };
 
   const onLoginPress = () => {
@@ -127,7 +132,12 @@ const UploadPicture = ({ route }) => {
   };
 
   const onOKPress = () => {
-    navigation.navigate('Home');
+    if (apiResponse) {
+      navigation.navigate('HomeTabs', {
+        screen: 'Home',
+        params: { user: apiResponse.data.data.user }
+      });
+    }
   }
 
   return (

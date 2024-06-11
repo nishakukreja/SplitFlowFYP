@@ -1,38 +1,49 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
-import IoniconsIcon from "react-native-vector-icons/Ionicons";
+import FeatherIcon from "react-native-vector-icons/Feather";
 import MaterialIconsIcon from "react-native-vector-icons/MaterialIcons";
 
 const Settings = () => {
   const navigation = useNavigation();
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   const handleOptionPress = (screen) => {
+    if (screen === 'TwoFactorAuthentication') {
+      setIs2FAEnabled(true);
+    }
     if (screen) {
-      navigation.navigate(screen);
+      navigation.navigate(screen, { is2FAEnabled });
     } else {
-      // Handle logout or other actions
+     
     }
   };
 
   const options = [
     { icon: 'edit', title: 'AccountDetail', screen: 'AccountDetail' },
     { icon: 'settings', title: 'Two Factor Authentication', screen: 'TwoFactorAuthentication' },
-    { icon: 'password', title: 'Change Password', screen: 'Change Password' },
-    { icon: 'privacy-tip', title: 'Privacy and Policy' , screen: 'Privacy and Policy'},
+    { icon: 'credit-card', title: 'Payment', screen: 'PaymentScreen' },
+    { icon: 'privacy-tip', title: 'Privacy and Policy' , screen: 'PrivacyAndPolicy'},
+    { icon: 'edit', title: 'EditProfile', screen: 'EditProfile' },
+    { icon: 'notifications-on', title: 'Notification', screen: 'Notification' },
+    { icon: 'sign-out', title: 'Logout' },
   ];
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flexDirection: "row", alignItems: "center", padding: 20 }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", flex: 1, textAlign: "center", color: 'black' }}>
+        <Text style={styles.headerText}>
           Settings
         </Text>
       </View>
       <View style={styles.options}>
         {options.map((option, index) => (
-          <TouchableOpacity key={index} style={styles.option} onPress={() => handleOptionPress(option.screen)}>
+          <TouchableOpacity
+            key={index}
+            style={styles.option}
+            onPress={() => handleOptionPress(option.screen)}
+          >
             {getOptionIcon(option.icon)}
             <Text style={styles.title}>{option.title}</Text>
             <FontAwesomeIcon name="angle-right" style={styles.arrow} />
@@ -49,16 +60,20 @@ const getOptionIcon = (iconName) => {
       return <FontAwesomeIcon name={iconName} style={styles.icon} />;
     case 'settings':
       return <MaterialIconsIcon name={iconName} style={styles.icon} />;
-    case 'password':
-      return <MaterialIconsIcon name={iconName} style={styles.icon} />;
+    case 'credit-card':
+      return <FeatherIcon name={iconName} style={styles.icon} />;
     case 'privacy-tip':
       return <MaterialIconsIcon name={iconName} style={styles.icon} />;
+    case 'notifications-on':
+      return <MaterialIconsIcon name={iconName} style={styles.icon} />;
+    case 'sign-out':
+      return <FontAwesomeIcon name={iconName} style={styles.icon} />;
     default:
       return null;
   }
 };
 
-const styles = {
+const styles = StyleSheet.create({
   options: {
     borderTopWidth: 1,
     borderTopColor: '#eee',
@@ -79,12 +94,18 @@ const styles = {
     fontSize: 18,
     flex: 1,
     color: 'black',
-    fontFamily: 'serif',
   },
   arrow: {
     fontSize: 18,
     color: 'black',
   },
-};
+  headerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    flex: 1,
+    textAlign: "center",
+    color: 'black',
+  },
+});
 
 export default Settings;

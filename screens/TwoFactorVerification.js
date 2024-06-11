@@ -1,27 +1,32 @@
-import React, { useState } from 'react';
+// TwoFactorVerification.js
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import OTPTextView from 'react-native-otp-textinput';
-import Custombutton from '../components/Custombutton'; // Assuming you have a CustomButton component
+import Custombutton from '../components/Custombutton'; 
 import { Colors } from '../constants/Colors';
-import { useNavigation } from '@react-navigation/native';
-import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const TwoFactorVerification = () => {
   const [otpCode, setOtpCode] = useState('');
   const navigation = useNavigation();
+  const route = useRoute();
+  const [method, setMethod] = useState(route.params?.method || 'default'); 
+  useEffect(() => {
+    if (route.params?.method) {
+      setMethod(route.params.method);
+    }
+  }, [route.params?.method]);
 
   const navigateToBackupScreen = () => {
+    
+    if (method === 'email') {
+     
+    }
     navigation.navigate('BackupScreen');
   };
 
   return (
     <View style={styles.container}>
-       {/* <ProgressSteps activeStep={1}>
-        <ProgressStep label="Step 1" />
-        <ProgressStep label="Step 2" />
-        <ProgressStep label="Step 3" />
-  
-      </ProgressSteps> */}
       <Text style={styles.header}>Two Factor Verification</Text>
       <View style={styles.otpInputContainer}>
         <OTPTextView
@@ -35,7 +40,6 @@ const TwoFactorVerification = () => {
           tintColor={Colors.PRIMARY}
           offTintColor={Colors.SECONDARY}
         />
-        
       </View>
       <Custombutton
         text="Verify"

@@ -43,6 +43,9 @@ import HomeTabs from './navigation/HomeTabs';
 // import UserIdContext from './components/UserIdContext';
 import { UserIdProvider } from './components/UserIdContext';
 import FinishScreen from './screens/FinishScreen';
+import PaymentScreen from './screens/PaymentScreen';
+import ConversationScreen from './screens/ConversationScreen';
+import Balance from './screens/Balance';
 const Stack = createStackNavigator();
 
 function App() {
@@ -238,6 +241,25 @@ function App() {
           headerShown: false
         }} 
         /> 
+        <Stack.Screen name="PaymentScreen" component={PaymentScreen}
+        options={{
+          headerShown: false
+        }} 
+        
+      
+        /> 
+         <Stack.Screen name="Balance" component={Balance}
+        options={{
+          headerShown: false
+        }} 
+        
+      
+        /> 
+        <Stack.Screen name="ConversationScreen" component={ConversationScreen}
+        // options={{
+        //   headerShown: false
+        // }}
+         />
              </Stack.Navigator>
            
     </NavigationContainer>

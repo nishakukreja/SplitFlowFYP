@@ -1,19 +1,18 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Avatar } from "react-native-elements";
-import { responsiveWidth } from "react-native-responsive-dimensions";
 
-const UserCircleAvatar = ({ item }) => {
+const UserCircleAvatar = ({ user }) => {
   return (
     <View style={styles.container}>
       <Avatar
         size={"medium"}
         rounded
         source={{
-          uri: item.imageUri,
+          uri: user.imageUri,
         }}
       />
-      <Text style={styles.userName}>{item.name}</Text>
+      <Text style={styles.userName}>{user.name}</Text>
     </View>
   );
 };

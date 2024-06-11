@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,22 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {Card, Avatar} from 'react-native-elements';
 import * as Progress from 'react-native-progress';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import axios from 'axios';
+import {allowedAddresses} from '../IPConfig';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 // import BottomTabs from '../navigation/BottomTabs';
 const bellIconName = 'bell';
 
-const ProgressBar = ({ progress, tasksCompleted }) => {
-  const navigation = useNavigation(); 
+import {setAllCategories} from '../redux/slices/CategoriesSlice';
+
+const ProgressBar = ({progress, tasksCompleted}) => {
+  const navigation = useNavigation();
 
   const handlePress = () => {
     navigation.navigate('TaskDetailScreen');
   };
-  
+
   return (
     <TouchableOpacity onPress={handlePress}>
       <View
@@ -47,7 +53,7 @@ const ProgressBar = ({ progress, tasksCompleted }) => {
           }}>
           Task Progress
         </Text>
-        {/* Ensure ProgressCircle component does not render text strings */}
+        
         <ProgressCircle
           progress={progress}
           progressColor="#AC87C5"
@@ -89,12 +95,17 @@ const ProgressBar = ({ progress, tasksCompleted }) => {
 };
 const Home = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(null);
+
   const navigation = useNavigation();
   const route = useRoute();
 
+  const dispatch = useDispatch();
+
+  var {categories, categoriesTemp} = useSelector(state => state.categories);
+
   const handleCarouselItemPress = index => {
     setCarouselIndex(index);
-
   };
 
   const navigateToProfile = () => {
@@ -109,11 +120,9 @@ const Home = () => {
     navigation.navigate('Notification');
   };
 
-
   // const navigateToNewTask = () => {
   //   navigation.navigate('NewTaskScreen');
   // };
-  
 
   // const navigateToChatScreen = () => {
   //   navigation.navigate('ChatScreen');
@@ -121,16 +130,44 @@ const Home = () => {
   // const navigateToSearchScreen = () => {
   //   navigation.navigate('SearchScreen');
   // };
-  const categories = [
-    { label: 'All', icon: 'circle' },
-    { label: 'Photography', icon: 'camera' },
-    { label: 'Food', icon: 'cutlery' },
-    { label: 'Weddings', icon: 'heart' },
-    { label: 'Events', icon: 'calendar' },
-    { label: 'Music', icon: 'music' },
-    { label: 'Decor', icon: 'tree' },
-    { label: 'Others', icon: 'ellipsis-h' },
-  ];
+  // const categories = [
+  //   {label: 'All', icon: 'circle'},
+  //   {label: 'Photography', icon: 'camera'},
+  //   {label: 'Food', icon: 'cutlery'},
+  //   {label: 'Weddings', icon: 'heart'},
+  //   {label: 'Events', icon: 'calendar'},
+  //   {label: 'Music', icon: 'music'},
+  //   {label: 'Decor', icon: 'tree'},
+  //   {label: 'Others', icon: 'ellipsis-h'},
+  // ];
+
+  const handleCategoryPress = index => {
+    setSelectedCategoryIndex(index === selectedCategoryIndex ? null : index);
+  };
+
+  const getAllCategories = async () => {
+    try {
+      const apiResponse = await axios
+        .get(`${allowedAddresses.ip}/category/get-all-categories`)
+        .then(onSuccess => {
+          console.log(
+            'on success api get all categories: ',
+            onSuccess.data.data,
+          );
+          dispatch(setAllCategories(onSuccess.data.data));
+        })
+        .catch(onError => {
+          console.log('on error api get all categories: ', onError);
+        });
+    } catch (error) {
+      console.log('error in getting all categories: ', error);
+    }
+  };
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
+
   return (
     <ScrollView style={{flex: 1, backgroundColor: '#F5FCFF'}}>
       <View style={styles.container}>
@@ -185,28 +222,36 @@ const Home = () => {
           </View>
         </ScrollView>
         <ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  style={styles.categoryContainer}
->
-  {categories.map((category, index) => (
-    <TouchableOpacity
-      key={index}
-      style={[
-        styles.categoryChip,
-        index === carouselIndex && styles.selectedCategory,
-      ]}
-      onPress={() => handleCarouselItemPress(index)}
-    >
-      <FontAwesome
-        name={category.icon}
-        size={18}
-        color={index === carouselIndex ? '#FFF' : '#000'}
-        style={styles.categoryIcon}
-      />
-    </TouchableOpacity>
-  ))}
-</ScrollView>
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              handleCategoryPress(null);
+            }}
+            style={[
+              styles.categoryChip,
+              selectedCategoryIndex === null && styles.selectedCategory,
+            ]}>
+            <Text>All</Text>
+          </TouchableOpacity>
+          {categories.map((category, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.categoryChip,
+                index === selectedCategoryIndex && styles.selectedCategory,
+              ]}
+              onPress={() => handleCategoryPress(index)}>
+              <Text style={[
+                styles.categoryChipText,
+                index === selectedCategoryIndex ? { color: '#FFF', fontWeight: 'bold' } : { color: '#000', fontWeight: 'bold' } 
+              ]}>
+                {category.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
         {/* <TouchableOpacity
           onPress={navigateToNewTask}
           style={styles.newTaskButton}>
@@ -218,33 +263,33 @@ const Home = () => {
           style={styles.chatButton}>
           <FontAwesome name="wechat" size={40} color="#756AB6" />
         </TouchableOpacity> */}
-      {/* <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={navigateToSearchScreen}
           style={styles.chatButton}>
           <AntDesign name="search1" size={40} color="black" />
         </TouchableOpacity> */}
-
       </View>
 
       <RecentProjects />
-      
+
       <TodayTasks />
-      {/* <BottomTabs /> */}
+      
     </ScrollView>
   );
 };
+
 const RecentProjects = () => {
   const navigation = useNavigation();
 
   const handleViewAllPress = () => {
     navigation.navigate('ViewAllScreen'); // Replace 'ViewAllScreen' with the actual name of your view all screen
   };
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText} >Suggested Tasks</Text>
-        <TouchableOpacity 
+        <Text style={styles.headerText}>Suggested Tasks</Text>
+        <TouchableOpacity
           style={styles.viewAllButton}
           onPress={handleViewAllPress}>
           <Text style={styles.viewAllButtonText}>View All</Text>
@@ -318,15 +363,15 @@ const RecentProjects = () => {
 };
 
 const TodayTasks = () => {
-  const navigation = useNavigation(); // Get the navigation object
+  const navigation = useNavigation(); 
 
   const handleViewAllPress = () => {
-    navigation.navigate('AllTaskScreen'); // Navigate to the AllTasksScreen
+    navigation.navigate('AllTaskScreen'); 
   };
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, {marginBottom: -10, marginTop: 1}]}>
+      <View style={[styles.header, {marginBottom: 20, marginTop: 5}]}>
         <Text style={styles.headerText}>Today Tasks</Text>
         <TouchableOpacity onPress={handleViewAllPress}>
           <Text style={styles.viewAll}>View All</Text>
@@ -359,14 +404,11 @@ const TodayTasks = () => {
               Decoration
             </Text>
             <Text style={{color: 'black', fontFamily: 'serif'}}>Sep 8</Text>
-            
           </View>
         </View>
       </View>
-      
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
@@ -470,7 +512,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     fontFamily: 'serif',
-    marginBottom: -21,
+    marginBottom: 4,
   },
   viewAll: {
     color: '#6146C6',
@@ -583,6 +625,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 10,
     padding: 10,
+    color:'#614C64'
   },
   checkmark: {
     fontSize: 20,
@@ -606,7 +649,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     marginHorizontal: 10,
-  }, 
+  },
   chatButton: {
     position: 'absolute',
     bottom: -9,
@@ -623,41 +666,41 @@ const styles = StyleSheet.create({
     borderRadius: 70,
     marginRight: 10,
     backgroundColor: '#E0E0E0',
-
+  },
+  categoryChipText: {
+    color:'black',
   },
   selectedCategory: {
     backgroundColor: '#6146C6',
   },
   categoryIcon: {
     marginRight: 2,
-    marginLeft:2,
+    marginLeft: 2,
   },
   categoryLabel: {
     color: '#000',
     fontWeight: 'bold',
   },
-  selectedLabel: {
-    color: '#FFF',
-  },
+  // selectedLabel: {
+  //   color: '#FFF',
+  // },
   viewAllButton: {
     // backgroundColor: '#6146C6',
     padding: 10,
     borderRadius: 5,
-    marginTop: 20,
+    marginTop: -8,
   },
   viewAllButtonText: {
     color: '#6146C6',
     // fontWeight: 'bold',
     fontSize: 16,
-    fontFamily:'serif'
+    fontFamily: 'serif',
   },
   categoryLabel: {
     marginTop: 10,
     fontSize: 16,
     color: 'black',
   },
-
-
 });
 
 export default Home;

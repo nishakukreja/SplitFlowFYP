@@ -1,12 +1,10 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Platform } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 const ConversationCard = ({ item }) => {
   return (
     <View
       style={{
-        // backgroundColor: "red",
-
         borderWidth: 1,
         borderColor: "lightgray",
         marginBottom: "4%",
@@ -33,9 +31,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     borderRadius: 7,
-    // borderWidth: 1,
-    // borderColor: "lightgray",
-    // marginBottom: "4%",
   },
   profileImage: {
     width: 60,

@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation hook
+import { useNavigation } from '@react-navigation/native';
 
 const BackupScreen = () => {
-  const navigation = useNavigation(); // Initialize navigation
+  const navigation = useNavigation(); 
   const [email, setEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(true);
 
   const handleEmailChange = (text) => {
     setEmail(text);
-    // Perform email validation
+   
     setIsValidEmail(validateEmail(text));
   };
 
@@ -21,12 +22,16 @@ const BackupScreen = () => {
 
   const handleSubmit = () => {
     if (isValidEmail) {
-      // Navigate to FinishScreen
-      navigation.navigate('FinishScreen');
+      // Navigate to TwoFactorVerification with method as parameter
+      navigateToVerification('email');
     } else {
       // Show an error message if email is not valid
       Alert.alert('Error', 'Please enter a valid email address.');
     }
+  };
+
+  const navigateToVerification = (method) => {
+    navigation.navigate('TwoFactorVerification', { method });
   };
 
   return (
@@ -86,8 +91,8 @@ const styles = StyleSheet.create({
     fontFamily: 'serif',
   },
   button: {
-    width: '100%', // Set width to 100% to expand to full width
-    height: 50, // Set height as desired
+    width: '100%', 
+    height:50,
   },
   image: {
     width: 330,

@@ -65,7 +65,7 @@ const NewTaskScreen = () => {
   };
 
   const renderTag = (tag) => {
-    const tagWidth = tag.name.length * 8 + 60;
+    const tagWidth = tag.name.length * 8 + 50;
 
     return (
       <Text

@@ -1,25 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const TwoFactorAuthentication = () => {
   const navigation = useNavigation();
+  const [enabled2FA, setEnabled2FA] = useState(false);
 
   const handleEnable2FA = () => {
-    // Navigate to StepScreen when ENABLE 2FA button is pressed
-    navigation.navigate('StepScreen');
+    setEnabled2FA(true);
+    navigation.navigate('StepScreen', { enabled2FA: true });
   };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Enable Two-Factor Authentication (2FA) to add an extra layer of protection.</Text>
+      <Text style={styles.heading}>
+        Enable Two-Factor Authentication (2FA) to add an extra layer of protection.
+      </Text>
       <Image source={require('../assets/images/tfa.png')} style={styles.image} />
-      
       <Text style={styles.warning}>If you don't know what it is, click here.</Text>
       <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button} onPress={handleEnable2FA}>
-  <Text style={styles.buttonText}>ENABLE2FA</Text>
-</TouchableOpacity>
-        <TouchableOpacity style={styles.skipButton}>
+        <TouchableOpacity style={styles.button} onPress={handleEnable2FA}>
+          <Text style={styles.buttonText}>ENABLE 2FA</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={() => navigation.goBack('Setting')}
+        >
           <Text style={styles.skipButtonText}>SKIP</Text>
         </TouchableOpacity>
       </View>
@@ -33,19 +39,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-  },
-  securityText: {
-    fontSize: 27,
-    fontWeight: 'bold',
-    marginBottom: 120,
-    color: 'black',
-    fontFamily: 'serif',
-  },
-  orangeText: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    color: '#6146C6',
-    fontFamily: 'serif',
   },
   image: {
     width: 390,

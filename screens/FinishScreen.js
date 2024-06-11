@@ -7,9 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 const FinishScreen = () => {
   const navigation = useNavigation();
 
-  const handleHomePress = () => {
+  const handleHomeTabsPress = () => {
     // Navigate to the "Login" screen
-    navigation.navigate('Home');
+    navigation.navigate('HomeTabs');
   };
 
   return (
@@ -19,7 +19,7 @@ const FinishScreen = () => {
       <Text style={styles.subtitle}>
         You've successfully enabled your TwoFactorAuthentication.
       </Text>
-      <Custombutton text="Back To Home" onPress={handleHomePress} />
+      <Custombutton text="Back To Home" onPress={handleHomeTabsPress} />
     </View>
   );
 };
