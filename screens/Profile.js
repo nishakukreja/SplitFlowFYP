@@ -24,7 +24,7 @@ const Profile = () => {
 
   const getUserProfile = async () => {
     try {
-      const apiResponse = await axios.get(`https://your-api-url.com/user/get-profile/${route.params.user.userId}`);
+      const apiResponse = await axios.get(`192.168.0.116/user/get-profile/${route.params.user.userId}`);
       console.log('send otp success: ', apiResponse.data);
     } catch (error) {
       console.log('error in getting user profile: ', error.response.data);
@@ -42,7 +42,7 @@ const Profile = () => {
         console.log('ImagePicker Error: ', response.error);
       } else if (response.assets && response.assets[0].uri) {
         const newImage = { id: addedImages.length + 1, uri: response.assets[0].uri };
-        setAddedImages([...addedImages, newImage]); // Add the new image to state
+        setAddedImages([...addedImages, newImage]); 
       } else {
         console.log('Invalid response from image picker: ', response);
       }

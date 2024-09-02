@@ -23,11 +23,11 @@ const bellIconName = 'bell';
 
 import {setAllCategories} from '../redux/slices/CategoriesSlice';
 
-const ProgressBar = ({progress, tasksCompleted}) => {
+const ProgressBar = ({progress, tasksCompleted, title, subTasks, groupTask}) => {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    navigation.navigate('TaskDetailScreen');
+    navigation.navigate('TaskDetailScreen', {groupTask});
   };
 
   return (
@@ -51,7 +51,7 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             marginTop: 22,
             fontSize: 22,
           }}>
-          Task Progress
+          {title}
         </Text>
         
         <ProgressCircle
@@ -73,7 +73,7 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             fontFamily: 'serif',
             position: 'absolute',
             left: 160,
-            top: 60,
+            top: 80,
           }}>
           {Math.round(progress * 100)}%
         </Text>
@@ -84,10 +84,10 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             fontFamily: 'serif',
             position: 'absolute',
             left: 160,
-            top: 90,
+            top: 100,
             fontSize: 12,
           }}>
-          {tasksCompleted}/10 Tasks Completed
+          Total Subtasks: {subTasks.length}
         </Text>
       </View>
     </TouchableOpacity>
@@ -164,8 +164,40 @@ const Home = () => {
     }
   };
 
+
+  const {userAuthToken, currentUser} = useSelector((state)=>state.user)
+
+  const [myAllGroupTasks, setMyAllGroupTasks] = useState([]);
+
+
+
+
+  const getMyGroupTasks = async () => {
+    try {
+      const apiResponse = await axios
+        .get(`${allowedAddresses.ip}/group-task/get-my-group-tasks`, {
+          headers:{
+            authorization:`Bearer ${userAuthToken}`
+          }
+        })
+        .then(onSuccess => {
+          console.log(
+            'on success api get my group tasks: ',
+            onSuccess.data.data,
+          );
+          setMyAllGroupTasks(onSuccess.data.data)
+        })
+        .catch(onError => {
+          console.log('on error api get all my group tasks: ', onError);
+        });
+    } catch (error) {
+      console.log('error in getting all my group tasks: ', error);
+    }
+  };
+
   useEffect(() => {
     getAllCategories();
+    getMyGroupTasks();
   }, []);
 
   return (
@@ -212,14 +244,34 @@ const Home = () => {
             );
             setCarouselIndex(newIndex);
           }}>
-          <View style={styles.carouselItem}>
+            {
+              (myAllGroupTasks && myAllGroupTasks.length >0) && (
+                myAllGroupTasks.map((groupTask, index)=>{
+                  return (
+                    <View style={styles.carouselItem}>
+                    <Text>First Carousel Item</Text>
+                    <ProgressBar progress={groupTask.progress} tasksCompleted={7} subTasks={groupTask.subTasks} title={groupTask.title} groupTask={groupTask} />
+                  </View>
+                  )
+                })
+              )
+              // myAllGroupTasks.map((groupTask, index)=>{
+              //   return (
+              //     <View style={styles.carouselItem}>
+              //     <Text>First Carousel Item</Text>
+              //     <ProgressBar progress={groupTask.progress} tasksCompleted={7} subTasks={groupTask.subTasks} title={groupTask.title} />
+              //   </View>
+              //   )
+              // })
+            }
+          {/* <View style={styles.carouselItem}>
             <Text>First Carousel Item</Text>
             <ProgressBar progress={0.9} tasksCompleted={7} />
-          </View>
-          <View style={styles.carouselItem}>
+          </View> */}
+          {/* <View style={styles.carouselItem}>
             <Text>Second Carousel Item</Text>
             <ProgressBar progress={0.5} tasksCompleted={5} />
-          </View>
+          </View> */}
         </ScrollView>
         <ScrollView
           horizontal
@@ -554,7 +606,7 @@ const styles = StyleSheet.create({
     color: 'green',
   },
   progress: {
-    marginTop: 8,
+    marginTop: 7,
     fontWeight: 'bold',
   },
   header: {

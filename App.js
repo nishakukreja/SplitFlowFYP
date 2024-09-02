@@ -46,6 +46,11 @@ import FinishScreen from './screens/FinishScreen';
 import PaymentScreen from './screens/PaymentScreen';
 import ConversationScreen from './screens/ConversationScreen';
 import Balance from './screens/Balance';
+import OtpVerification from './screens/OtpVerification';
+import Disable2FA from './screens/Disable2FA';
+import NewSubTaskScreen from './screens/NewSubTaskScreen';
+import ViewTaskScreen from './screens/ViewTaskScreen';
+import StripeScreen from './screens/StripeScreen';
 const Stack = createStackNavigator();
 
 function App() {
@@ -151,9 +156,9 @@ function App() {
         }}
         />
           <Stack.Screen name="DoneTask" component={DoneTask} 
-         options={{
-          headerShown: false
-        }}
+        //  options={{
+        //   headerShown: false
+        // }}
         />
               <Stack.Screen name="PasswordChange" component={PasswordChange} 
             options={{
@@ -178,9 +183,9 @@ function App() {
         
          />
              <Stack.Screen name="ViewAllScreen" component={ViewAllScreen}
-        options={{
-          headerShown: false
-        }} 
+        // options={{
+        //   headerShown: false
+        // }} 
         /> 
          <Stack.Screen name="AllTaskScreen" component={AllTaskScreen}
         options={{
@@ -252,6 +257,8 @@ function App() {
         options={{
           headerShown: false
         }} 
+
+         
         
       
         /> 
@@ -260,6 +267,35 @@ function App() {
         //   headerShown: false
         // }}
          />
+
+<Stack.Screen name="2FAAuthVerification" component={OtpVerification}
+        // options={{
+        //   headerShown: false
+        // }}
+         />
+
+<Stack.Screen name="Disable2FA" component={Disable2FA}
+        // options={{
+        //   headerShown: false
+        // }}
+         />
+
+<Stack.Screen name="NewSubTask" component={NewSubTaskScreen}
+        // options={{
+        //   headerShown: false
+        // }}
+         />
+         <Stack.Screen name="ViewTaskScreen" component={ViewTaskScreen}
+        options={{
+          headerShown: false
+        }}
+         />
+          <Stack.Screen name="StripeScreen" component={StripeScreen}
+        options={{
+          headerShown: false
+        }}
+         />
+
              </Stack.Navigator>
            
     </NavigationContainer>

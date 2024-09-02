@@ -17,6 +17,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import UserIdContext from '../components/UserIdContext';
 import LogoImage from '../assets/images/logo.png';
 import GoogleImage from '../assets/images/google.png';
+import { setCurrentUser, setCurrentUserAuthToken } from '../redux/slices/UserSlice';
+import { useDispatch } from 'react-redux';
 
 const Login = () => {
   const {setUserId} = useContext(UserIdContext);
@@ -25,6 +27,8 @@ const Login = () => {
 
   const {control, handleSubmit} = useForm();
   const navigation = useNavigation();
+
+  const dispatch = useDispatch();
 
   const onLoginPressed = async data => {
     if (loading) {
@@ -36,6 +40,8 @@ const Login = () => {
       const loginData = {
         emailAddress: data.email,
         password: data.password,
+        // emailAddress: "nishakukreja500@gmail.com",
+        // password: "123456789",
       };
 
       console.log('login data: ', loginData);
@@ -45,7 +51,7 @@ const Login = () => {
         loginData,
       );
       if (apiResponse.data.status === 200) {
-        // Alert.alert(apiResponse.data.message);
+        Alert.alert(apiResponse.data.message);
 
         console.log('apiResponse.data.message: ', apiResponse.data);
 
@@ -53,6 +59,9 @@ const Login = () => {
         // navigation.replace('Home', {
         //   user: apiResponse.data.data.user,
         // });
+        dispatch(setCurrentUserAuthToken(apiResponse.data.data.authToken))
+        dispatch(setCurrentUser(apiResponse.data.data.user))
+
         navigation.navigate('HomeTabs',{
           screen:'Home', params:{user: apiResponse.data.data.user}
         })
@@ -61,8 +70,17 @@ const Login = () => {
         Alert.alert(apiResponse.data.message);
       }
     } catch (e) {
-      console.log(e.response.data.message);
-      Alert.alert('Oops', e.response.data.message);
+      console.log(e.response.data);
+      if(e.response.data.statusCode === 401){
+        // Alert.alert('Oops', e.response.data.message);
+
+        navigation.navigate("2FAAuthVerification", {
+          emailAddress:e.response.data.stack.emailAddress,
+          userId:e.response.data.stack.userId,
+          isTwoFactorEnabled:e.response.data.stack.isTwoFactorEnabled,
+
+        })
+      }
     }
     setLoading(false);
   };
