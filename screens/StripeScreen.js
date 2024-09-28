@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, Text, ScrollView, TouchableOpacity } from 'react-native';
 
-const Balance = () => {
+const StripeScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Balance;
+export default StripeScreen;

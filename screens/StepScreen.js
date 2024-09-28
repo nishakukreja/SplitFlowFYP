@@ -10,7 +10,7 @@ const StepScreen = () => {
 
   const handleSelectMethod = (method) => {
     setVerificationMethod(method);
-    navigation.navigate('TwoFactorVerification', { method });
+    navigation.navigate('BackupScreen', { method });
   };
 
   return (
@@ -19,7 +19,7 @@ const StepScreen = () => {
         <View style={styles.optionWrapper}>
           <TouchableOpacity style={styles.option}>
             <Text style={styles.optionText}>Verify From Email</Text>
-            <Text style={styles.exampleText}>e.g. Google Authenticator</Text>
+            {/* <Text style={styles.exampleText}>e.g. Google Authenticator</Text> */}
             <TouchableOpacity 
               style={styles.selectButton} 
               onPress={() => handleSelectMethod('email')}

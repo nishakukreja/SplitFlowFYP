@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -13,22 +13,37 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {Card, Avatar} from 'react-native-elements';
 import * as Progress from 'react-native-progress';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
-import {allowedAddresses} from '../IPConfig';
-import { responsiveFontSize } from 'react-native-responsive-dimensions';
+import {allowedAddresses, formatUnderscoredString} from '../IPConfig';
+import {responsiveFontSize} from 'react-native-responsive-dimensions';
 // import BottomTabs from '../navigation/BottomTabs';
 const bellIconName = 'bell';
 
 import {setAllCategories} from '../redux/slices/CategoriesSlice';
+import {getAuthToken, getUserData} from '../redux/slices/UserSlice';
+import {getAllSubTasks, joinSubTask} from '../services/api';
+import Modal from 'react-native-modal';
 
-const ProgressBar = ({progress, tasksCompleted}) => {
+const ProgressBar = ({
+  progress,
+  tasksCompleted,
+  title,
+  subTasks,
+  groupTask,
+}) => {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    navigation.navigate('TaskDetailScreen');
+    navigation.navigate('TaskDetailScreen', {groupTask});
   };
+
+  console.log('this is the grouptask data', groupTask);
 
   return (
     <TouchableOpacity onPress={handlePress}>
@@ -51,9 +66,9 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             marginTop: 22,
             fontSize: 22,
           }}>
-          Task Progress
+          {title}
         </Text>
-        
+
         <ProgressCircle
           progress={progress}
           progressColor="#AC87C5"
@@ -73,9 +88,9 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             fontFamily: 'serif',
             position: 'absolute',
             left: 160,
-            top: 60,
+            top: 80,
           }}>
-          {Math.round(progress * 100)}%
+          {Math.round(progress)}%
         </Text>
         <Text
           style={{
@@ -84,10 +99,10 @@ const ProgressBar = ({progress, tasksCompleted}) => {
             fontFamily: 'serif',
             position: 'absolute',
             left: 160,
-            top: 90,
+            top: 100,
             fontSize: 12,
           }}>
-          {tasksCompleted}/10 Tasks Completed
+          Total Subtasks: {subTasks.length}
         </Text>
       </View>
     </TouchableOpacity>
@@ -96,102 +111,164 @@ const ProgressBar = ({progress, tasksCompleted}) => {
 const Home = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(null);
-
+  const [subtasks, setSubtasks] = useState([]);
+  const userData = useSelector(getUserData);
+  const token = useSelector(getAuthToken);
   const navigation = useNavigation();
   const route = useRoute();
-
   const dispatch = useDispatch();
+  const {categories} = useSelector(state => state.categories);
+  const [particpantModal, setParticipantModal] = useState(false);
+  const [subtaskID, setSubTaskID] = useState();
 
-  var {categories, categoriesTemp} = useSelector(state => state.categories);
+  const [myAllGroupTasks, setMyAllGroupTasks] = useState([]);
 
-  const handleCarouselItemPress = index => {
-    setCarouselIndex(index);
-  };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       await getAllCategories();
+  //       await getMyGroupTasks();
+  //       await ViewgetAllSubTasks();
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
 
-  const navigateToProfile = () => {
-    navigation.replace('Profile', {
-      user: route.params.user,
-    });
-  };
-  const navigateToViewAllScreen = () => {
-    navigation.navigate('ViewAllScreen'); // Replace 'ViewAllScreen' with the name of your view all screen component
-  };
-  const navigateToNotifications = () => {
-    navigation.navigate('Notification');
-  };
+  //   fetchData();
+  // }, [particpantModal]);
 
-  // const navigateToNewTask = () => {
-  //   navigation.navigate('NewTaskScreen');
-  // };
+  const fetchData = useCallback(async () => {
+    try {
+      await getAllCategories();
+      await getMyGroupTasks();
+      await ViewgetAllSubTasks();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }, []); // Empty dependency array means this function doesn't rely on external variables
 
-  // const navigateToChatScreen = () => {
-  //   navigation.navigate('ChatScreen');
-  // };
-  // const navigateToSearchScreen = () => {
-  //   navigation.navigate('SearchScreen');
-  // };
-  // const categories = [
-  //   {label: 'All', icon: 'circle'},
-  //   {label: 'Photography', icon: 'camera'},
-  //   {label: 'Food', icon: 'cutlery'},
-  //   {label: 'Weddings', icon: 'heart'},
-  //   {label: 'Events', icon: 'calendar'},
-  //   {label: 'Music', icon: 'music'},
-  //   {label: 'Decor', icon: 'tree'},
-  //   {label: 'Others', icon: 'ellipsis-h'},
-  // ];
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(); // Fetch data when the screen is focused
 
-  const handleCategoryPress = index => {
-    setSelectedCategoryIndex(index === selectedCategoryIndex ? null : index);
+      // If you need to clean up something, return a cleanup function
+      return () => {
+        // Cleanup code if necessary
+      };
+    }, [particpantModal]), // Dependency array includes particpantModal
+  );
+
+  const ViewgetAllSubTasks = async () => {
+    try {
+      const response = await getAllSubTasks(token);
+      setSubtasks(response.data);
+      // console.log('', JSON.stringify(response, null, 2));
+    } catch (error) {
+      console.error('Error fetching subtasks:', error);
+    }
   };
 
   const getAllCategories = async () => {
     try {
-      const apiResponse = await axios
-        .get(`${allowedAddresses.ip}/category/get-all-categories`)
-        .then(onSuccess => {
-          console.log(
-            'on success api get all categories: ',
-            onSuccess.data.data,
-          );
-          dispatch(setAllCategories(onSuccess.data.data));
-        })
-        .catch(onError => {
-          console.log('on error api get all categories: ', onError);
-        });
+      const response = await axios.get(
+        `${allowedAddresses.ip}/category/get-all-categories`,
+      );
+      dispatch(setAllCategories(response.data.data));
     } catch (error) {
-      console.log('error in getting all categories: ', error);
+      console.error('Error fetching categories:', error);
     }
   };
 
-  useEffect(() => {
-    getAllCategories();
-  }, []);
+  const getMyGroupTasks = async () => {
+    try {
+      const response = await axios.get(
+        `${allowedAddresses.ip}/group-task/get-my-group-tasks`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setMyAllGroupTasks(response.data.data);
+    } catch (error) {
+      console.error('Error fetching group tasks:', error);
+    }
+  };
+
+  const handleCategoryPress = title => {
+    setSelectedCategoryIndex(title === selectedCategoryIndex ? null : title);
+  };
+
+  const joinTheSubTaskID = async () => {
+    const response = await joinSubTask(token, subtaskID);
+    setParticipantModal(false);
+    // console.log(response);
+  };
+
+  const toggleModal = subtaskID => {
+    setSubTaskID(subtaskID);
+    setParticipantModal(!particpantModal);
+  };
+  const filteredSubtasks = subtasks.filter(
+    subtask => subtask.status !== 'COMPLETED',
+  );
+
+  const renderItem = ({item}) => (
+    <View style={styles.itemContainer}>
+      <TouchableOpacity onPress={() => toggleModal(item?._id)}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+        <Text style={styles.status}>Status: {item.status}</Text>
+        <Text style={styles.price}>Price: ${item.price}</Text>
+        <Text style={styles.deadline}>
+          Deadline: {new Date(item.deadline).toLocaleDateString()}
+        </Text>
+
+        {item.participants.length > 0 ? (
+          <View style={styles.participantsContainer}>
+            <Text style={styles.participantsTitle}>Participants:</Text>
+            {item.participants.map(participant => (
+              <View key={participant._id} style={styles.participant}>
+                <Image
+                  source={{uri: participant.profileImage.url}}
+                  style={styles.profileImage}
+                />
+                <Text>
+                  {participant.firstName} {participant.lastName}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text>No participants</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: '#F5FCFF'}}>
+    <ScrollView style={styles.scrollView}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <Text
-              style={{
-                color: 'black',
-                fontSize: 20,
-                fontFamily: 'serif',
-                fontWeight: 'bold',
-              }}>
-              Hello, Nisha
+              style={{color: 'black', fontFamily: 'serif', fontWeight: 'bold'}}>
+              Hello, {userData?.firstName}
             </Text>
+
             <View style={styles.iconsContainer}>
-              <TouchableOpacity onPress={navigateToNotifications}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Notification')}>
                 <FontAwesome
-                  name={bellIconName}
+                  name="bell"
                   size={24}
+                  marginLeft={12}
                   color="black"
-                  style={styles.bell}
+                  style={styles.icon}
                 />
               </TouchableOpacity>
-              <TouchableOpacity onPress={navigateToProfile}>
+              <TouchableOpacity
+                onPress={() => navigation.replace('Profile', {user: userData})}>
                 <Image
                   source={require('../assets/images/female.png')}
                   style={styles.profileImage}
@@ -199,7 +276,9 @@ const Home = () => {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.subHeader}>Let's complete your today tasks!</Text>
+          <Text style={styles.subHeader}>
+            Let's complete your today's tasks!
+          </Text>
         </View>
         <ScrollView
           horizontal
@@ -212,161 +291,190 @@ const Home = () => {
             );
             setCarouselIndex(newIndex);
           }}>
-          <View style={styles.carouselItem}>
-            <Text>First Carousel Item</Text>
-            <ProgressBar progress={0.9} tasksCompleted={7} />
-          </View>
-          <View style={styles.carouselItem}>
-            <Text>Second Carousel Item</Text>
-            <ProgressBar progress={0.5} tasksCompleted={5} />
-          </View>
+          {myAllGroupTasks.map((groupTask, index) => (
+            <View key={index} style={styles.carouselItem}>
+              <ProgressBar
+                progress={groupTask.progress}
+                tasksCompleted={7}
+                subTasks={groupTask.subTasks}
+                title={groupTask.title}
+                groupTask={groupTask}
+              />
+            </View>
+          ))}
         </ScrollView>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoryContainer}>
           <TouchableOpacity
-            onPress={() => {
-              handleCategoryPress(null);
-            }}
+            onPress={() => handleCategoryPress(null)}
             style={[
               styles.categoryChip,
               selectedCategoryIndex === null && styles.selectedCategory,
             ]}>
             <Text>All</Text>
           </TouchableOpacity>
-          {categories.map((category, index) => (
+          {categories.map(category => (
             <TouchableOpacity
-              key={index}
+              key={category._id}
               style={[
                 styles.categoryChip,
-                index === selectedCategoryIndex && styles.selectedCategory,
+                category.title === selectedCategoryIndex &&
+                  styles.selectedCategory,
               ]}
-              onPress={() => handleCategoryPress(index)}>
-              <Text style={[
-                styles.categoryChipText,
-                index === selectedCategoryIndex ? { color: '#FFF', fontWeight: 'bold' } : { color: '#000', fontWeight: 'bold' } 
-              ]}>
+              onPress={() => handleCategoryPress(category.title)}>
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  category.title === selectedCategoryIndex
+                    ? {color: '#FFF', fontWeight: 'bold'}
+                    : {color: '#000', fontWeight: 'bold'},
+                ]}>
                 {category.title}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
-        {/* <TouchableOpacity
-          onPress={navigateToNewTask}
-          style={styles.newTaskButton}>
-          <FontAwesome name="plus-circle" size={40} color="#756AB6" />
-        </TouchableOpacity> */}
-
-        {/* <TouchableOpacity
-          onPress={navigateToChatScreen}
-          style={styles.chatButton}>
-          <FontAwesome name="wechat" size={40} color="#756AB6" />
-        </TouchableOpacity> */}
-        {/* <TouchableOpacity
-          onPress={navigateToSearchScreen}
-          style={styles.chatButton}>
-          <AntDesign name="search1" size={40} color="black" />
-        </TouchableOpacity> */}
       </View>
 
-      <RecentProjects />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Suggested Tasks</Text>
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            onPress={() => navigation.navigate('ViewAllScreen', {subtasks})}>
+            <Text style={styles.viewAllButtonText}>View All</Text>
+          </TouchableOpacity>
+        </View>
 
-      <TodayTasks />
-      
+        <View
+          style={{
+            width: '100%',
+            height: 240,
+            backgroundColor: 'white',
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+          }}>
+          <TouchableOpacity
+            onPress={() => {
+              toggleModal(filteredSubtasks[0]?._id);
+            }}
+            style={{
+              backgroundColor: '#F875AA',
+              width: '48.5%',
+              height: '100%',
+            }}>
+            <Text style={styles.textColorStyle}>
+              Title: {filteredSubtasks[0]?.title}
+            </Text>
+            <Text style={styles.textColorStyle} numberOfLines={1}>
+              description: {filteredSubtasks[0]?.description}
+            </Text>
+            <Text style={styles.textColorStyle}>
+              Status: {formatUnderscoredString(filteredSubtasks[0]?.status)}
+            </Text>
+            <Text style={styles.textColorStyle}>
+              Deadline:{' '}
+              {new Date(filteredSubtasks[0]?.deadline).toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+          <View
+            style={{
+              backgroundColor: 'white',
+              width: '48.5%',
+              height: '100%',
+              flexDirection: 'column',
+              justifyContent: 'space-evenly',
+            }}>
+            <TouchableOpacity
+              onPress={() => {
+                toggleModal(filteredSubtasks[1]?._id);
+              }}
+              style={{
+                backgroundColor: '#FFBB64',
+                width: '100%',
+                height: '48.5%',
+              }}>
+              <Text style={styles.textColorStyle}>
+                Title: {filteredSubtasks[1]?.title}
+              </Text>
+              <Text style={styles.textColorStyle} numberOfLines={1}>
+                description: {filteredSubtasks[1]?.description}
+              </Text>
+              <Text style={styles.textColorStyle}>
+                Status:{formatUnderscoredString(filteredSubtasks[1]?.status)}
+              </Text>
+              <Text style={styles.textColorStyle}>
+                Deadline:{' '}
+                {new Date(filteredSubtasks[1]?.deadline).toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                toggleModal(filteredSubtasks[2]?._id);
+              }}
+              style={{
+                backgroundColor: '#82A0D8',
+                width: '100%',
+                height: '48.5%',
+              }}>
+              <Text style={styles.textColorStyle}>
+                Title: {filteredSubtasks[2]?.title}
+              </Text>
+              <Text style={styles.textColorStyle} numberOfLines={1}>
+                description: {filteredSubtasks[2]?.description}
+              </Text>
+              <Text style={styles.textColorStyle}>
+                Status: {formatUnderscoredString(filteredSubtasks[2]?.status)}
+              </Text>
+
+              <Text style={styles.textColorStyle}>
+                Deadline:{' '}
+                {new Date(filteredSubtasks[2]?.deadline).toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* <FlatList
+          data={filteredSubtasks}
+          renderItem={renderItem}
+          keyExtractor={item => item._id}
+        /> */}
+
+        <TodayTasks />
+      </View>
+
+      <Modal
+        isVisible={particpantModal}
+        onBackdropPress={() => setParticipantModal(false)}
+        style={styles.modal}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>
+            Do you want to become a participant?
+          </Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={joinTheSubTaskID}>
+              <Text style={styles.buttonText}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonCancel]}
+              onPress={() => setParticipantModal(false)}>
+              <Text style={styles.buttonText}>No</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
 
-const RecentProjects = () => {
+const TodayTasks = () => {
   const navigation = useNavigation();
 
   const handleViewAllPress = () => {
-    navigation.navigate('ViewAllScreen'); // Replace 'ViewAllScreen' with the actual name of your view all screen
-  };
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Suggested Tasks</Text>
-        <TouchableOpacity
-          style={styles.viewAllButton}
-          onPress={handleViewAllPress}>
-          <Text style={styles.viewAllButtonText}>View All</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.projectContainer}>
-        {/* Left Box */}
-        <View
-          style={[
-            styles.projectBox,
-            styles.leftBox,
-            {backgroundColor: '#82A0D8', width: 489, height: 269},
-          ]}>
-          <FontAwesome
-            name="calendar-check-o"
-            size={24}
-            color="black"
-            style={styles.icon}
-          />
-          <Text style={styles.projectTitle}>Event Management</Text>
-          <Text style={styles.priority}>High Priority</Text>
-          <Text style={styles.dueDate}>June 10, 2022 - 10 Tasks</Text>
-          <Text style={{color: 'black', fontFamily: 'serif'}}>78%</Text>
-          {/* Additional details/icons can be added here */}
-        </View>
-
-        {/* Right Boxes */}
-        <View style={styles.rightBoxes}>
-          {/* Top Right Box */}
-          <View
-            style={[
-              styles.projectBox,
-              {
-                backgroundColor: '#F875AA',
-                width: 140,
-                height: 129.9,
-                marginBottom: 2,
-              },
-            ]}>
-            <FontAwesome
-              name="cutlery"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.projectTitle}>Catering</Text>
-            <Text style={styles.dueDate}>June 10, 2022 - 10 Tasks</Text>
-            <Text style={{color: 'black', fontFamily: 'serif'}}>56%</Text>
-          </View>
-
-          <View
-            style={[
-              styles.projectBox,
-              {backgroundColor: '#FFBB64', width: 140, height: 129.9},
-            ]}>
-            <FontAwesome
-              name="camera"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.projectTitle}>Photography</Text>
-            <Text style={styles.dueDate}>June 10, 2022 - 10 Tasks</Text>
-            <Text style={{color: 'black', fontFamily: 'serif'}}>31%</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const TodayTasks = () => {
-  const navigation = useNavigation(); 
-
-  const handleViewAllPress = () => {
-    navigation.navigate('AllTaskScreen'); 
+    navigation.navigate('AllTaskScreen');
   };
 
   return (
@@ -417,8 +525,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 16,
   },
+  textColorStyle: {
+    color: 'black',
+    fontFamily: 'serif',
+  },
   header: {
     marginBottom: 7,
+    color: 'black',
+    fontFamily: 'serif',
   },
   headerRow: {
     flexDirection: 'row',
@@ -468,13 +582,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   percentage: {
-    color: 'black',
+    color: 'white',
     fontSize: 14,
     fontWeight: 'normal',
   },
-  bell: {
-    marginLeft: 131,
-  },
+
   subHeader: {
     marginLeft: -390,
     marginRight: 109,
@@ -487,7 +599,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 25,
-    marginLeft: 8,
+    marginLeft: 12,
   },
   carouselItem: {
     width: 353,
@@ -554,7 +666,7 @@ const styles = StyleSheet.create({
     color: 'green',
   },
   progress: {
-    marginTop: 8,
+    marginTop: 7,
     fontWeight: 'bold',
   },
   header: {
@@ -625,7 +737,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 10,
     padding: 10,
-    color:'#614C64'
+    color: '#614C64',
   },
   checkmark: {
     fontSize: 20,
@@ -668,7 +780,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   categoryChipText: {
-    color:'black',
+    color: 'black',
   },
   selectedCategory: {
     backgroundColor: '#6146C6',
@@ -700,6 +812,118 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: 'black',
+  },
+  subtasksContainer: {
+    flex: 1,
+    marginTop: 10,
+  },
+  subtasksTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtaskBox: {
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#f4f4f4',
+    borderRadius: 8,
+  },
+  subtaskTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  itemContainer: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  description: {
+    fontSize: 16,
+    marginVertical: 8,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  status: {
+    fontSize: 16,
+    marginVertical: 4,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  price: {
+    fontSize: 16,
+    marginVertical: 4,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  deadline: {
+    fontSize: 16,
+    marginVertical: 4,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  participantsContainer: {
+    marginVertical: 8,
+  },
+  participantsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  participant: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginLeft: 152,
+  },
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: 'black',
+    fontFamily: 'serif',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+    padding: 10,
+    marginHorizontal: 10,
+    flex: 1,
+    alignItems: 'center',
+  },
+  buttonCancel: {
+    backgroundColor: '#dc3545',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
 

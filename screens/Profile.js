@@ -1,31 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, Alert, StyleSheet, Modal, FlatList } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  Modal,
+  FlatList,
+} from 'react-native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import axios from 'axios';
-import { launchImageLibrary } from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {BASE_URL, createGalleryEntry, deleteGallery} from '../services/api';
+import {useSelector} from 'react-redux';
+import {getAuthToken} from '../redux/slices/UserSlice';
 
 const Profile = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const token = useSelector(getAuthToken);
   const [user, setUser] = useState(route.params.user);
   const [addedImages, setAddedImages] = useState([]); // State to store added images
   const [removeModalVisible, setRemoveModalVisible] = useState(false);
+  const [inspirationData, setInspirationData] = useState();
 
   const albums = [
-    { id: 1, name: 'Party shots', image: require('../assets/images/downloaddd.jpeg'), members: 4 },
-    { id: 2, name: 'Photoshoots', image: require('../assets/images/images.jpeg'), members: 8 },
-    { id: 3, name: 'Graduations', image: require('../assets/images/na.jpeg'), members: 12 },
-    { id: 4, name: 'Nature', image: require('../assets/images/nature.jpeg'), members: 8 },
+    {
+      id: 1,
+      name: 'Party shots',
+      image: require('../assets/images/downloaddd.jpeg'),
+      members: 4,
+    },
+    {
+      id: 2,
+      name: 'Photoshoots',
+      image: require('../assets/images/images.jpeg'),
+      members: 8,
+    },
+    {
+      id: 3,
+      name: 'Graduations',
+      image: require('../assets/images/na.jpeg'),
+      members: 12,
+    },
+    {
+      id: 4,
+      name: 'Nature',
+      image: require('../assets/images/nature.jpeg'),
+      members: 8,
+    },
   ];
 
-  useEffect(() => {
-    getUserProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // Function to call when the screen gains focus
+      getUserProfile();
+    }, []), // Dependencies array remains empty
+  );
 
   const getUserProfile = async () => {
     try {
-      const apiResponse = await axios.get(`https://your-api-url.com/user/get-profile/${route.params.user.userId}`);
-      console.log('send otp success: ', apiResponse.data);
+      const apiResponse = await axios.get(
+        `${BASE_URL}/user/get-profile/${route.params.user.userId}`,
+      );
+      console.log(
+        'send otp success: ',
+        JSON.stringify(apiResponse.data.data, null, 2),
+      );
+      // console.log(apiResponse.data.data.inspirationGallery);
+      setInspirationData(apiResponse.data.data.inspirationGallery);
     } catch (error) {
       console.log('error in getting user profile: ', error.response.data);
       if (error.response.data.statusCode === 400) {
@@ -33,23 +82,49 @@ const Profile = () => {
       }
     }
   };
+  console.log(inspirationData);
 
   const addImage = () => {
-    launchImageLibrary({ mediaType: 'mixed' }, response => {
+    launchImageLibrary({mediaType: 'photo'}, async response => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else if (response.assets && response.assets[0].uri) {
-        const newImage = { id: addedImages.length + 1, uri: response.assets[0].uri };
-        setAddedImages([...addedImages, newImage]); // Add the new image to state
+        const selectedImage = response.assets[0];
+
+        const newImage = {
+          id: addedImages.length + 1,
+          uri: selectedImage.uri,
+          name: selectedImage.fileName || `image_${Date.now()}.jpg`,
+        };
+        setAddedImages([...addedImages, newImage]);
+
+        // Call the API to upload the image
+        try {
+          const result = await createGalleryEntry(
+            token,
+            selectedImage.uri,
+            selectedImage.fileName,
+          );
+          if (result.success) {
+            Alert.alert('Success', result.message);
+          } else {
+            Alert.alert('Error', result.message);
+          }
+        } catch (error) {
+          Alert.alert(
+            'Error',
+            'An error occurred while creating the gallery entry.',
+          );
+        }
       } else {
         console.log('Invalid response from image picker: ', response);
       }
     });
   };
 
-  const removeImage = (id) => {
+  const removeImage = id => {
     setAddedImages(addedImages.filter(image => image.id !== id)); // Remove the image from state
   };
 
@@ -61,56 +136,78 @@ const Profile = () => {
     setRemoveModalVisible(false);
   };
 
+  const selectToDelete = async galleryId => {
+    try {
+      const response = await deleteGallery(token, galleryId);
+      if (response.success) {
+        Alert.alert('Success', 'Gallery item deleted successfully');
+        // Optionally, refresh the gallery list or state
+        getUserProfile(); // Refresh the profile to update the gallery list
+      } else {
+        Alert.alert('Error', response.message);
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'An error occurred while deleting the gallery item.',
+      );
+    }
+  };
+
+  console.log(JSON.stringify(inspirationData, null, 2));
+
   const InspirationGalleryScreen = () => {
     return (
       <View style={styles.inspirationGalleryContainer}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, { backgroundColor: '#6146C6' }]} onPress={addImage}>
+          <TouchableOpacity
+            style={[styles.button, {backgroundColor: '#6146C6'}]}
+            onPress={addImage}>
             <Text style={styles.buttonText}>Add</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, { backgroundColor: '#6146C6' }]} onPress={openRemoveModal}>
-            <Text style={styles.buttonText}>Remove</Text>
-          </TouchableOpacity>
+         
         </View>
         <View style={styles.header}>
           <Text style={styles.headerText}>Inspiration Gallery</Text>
         </View>
         <View style={styles.albumsContainer}>
-          {albums.map(album => (
+          {inspirationData?.map(album => (
             <View key={album.id} style={styles.album}>
-              <Image source={album.image} style={styles.albumImage} />
-              <Text style={styles.albumText}>{album.name}</Text>
-              <Text style={styles.membersText}>{album.members} members</Text>
+              <TouchableOpacity onPress={() => selectToDelete(album?._id)}>
+                <Image source={{uri: album?.url}} style={styles.albumImage} />
+              </TouchableOpacity>
+              <Text style={styles.albumText}>{album.description}</Text>
+              <Text style={styles.membersText}>{album.title}</Text>
             </View>
           ))}
         </View>
-        <ScrollView horizontal={true} contentContainerStyle={styles.imageContainer}>
-          {/* Render added images */}
-          {addedImages.map(image => (
-            <TouchableOpacity key={image.id} onPress={() => removeImage(image.id)}>
-              <Image source={{ uri: image.uri }} style={styles.image} />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <ScrollView
+          horizontal={true}
+          contentContainerStyle={styles.imageContainer}></ScrollView>
         <Modal
           animationType="slide"
           transparent={true}
           visible={removeModalVisible}
-          onRequestClose={closeRemoveModal}
-        >
+          onRequestClose={closeRemoveModal}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Select Item to Remove</Text>
               <FlatList
                 data={addedImages}
                 keyExtractor={item => item.id.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => { removeImage(item.id); closeRemoveModal(); }}>
-                    <Image source={{ uri: item.uri }} style={styles.modalImage} />
+                renderItem={({item}) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      removeImage(item.id);
+                      closeRemoveModal();
+                    }}>
+                    <Image source={{uri: item.uri}} style={styles.modalImage} />
                   </TouchableOpacity>
                 )}
               />
-              <TouchableOpacity style={styles.closeButton} onPress={closeRemoveModal}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={closeRemoveModal}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
@@ -125,18 +222,13 @@ const Profile = () => {
       <View style={styles.profileContainer}>
         <Text style={styles.title}>Profile</Text>
         <View style={styles.profileDetails}>
-          <Image source={{ uri: user.profile.url }} style={styles.profileImage} />
-          <Text style={styles.profileName}>{user.firstName} {user.lastName}</Text>
+          <Image source={{uri: user.profile.url}} style={styles.profileImage} />
+          <Text style={styles.profileName}>
+            {user.firstName} {user.lastName}
+          </Text>
           <Text style={styles.profileEmail}>{user.email}</Text>
         </View>
-        <View style={styles.taskContainer}>
-          <TouchableOpacity style={styles.taskButton}>
-            <Text style={styles.taskButtonText}>3 Ongoing Task</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.taskButton}>
-            <Text style={styles.taskButtonText}>8 Completed Task</Text>
-          </TouchableOpacity>
-        </View>
+       
       </View>
       <ScrollView style={styles.scrollContainer}>
         <InspirationGalleryScreen />
@@ -213,7 +305,7 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderRadius: 10,
     padding: 20,
-    marginVertical: 20,
+    marginVertical: 0,
   },
   header: {
     paddingHorizontal: 16,
@@ -223,6 +315,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'black',
+    marginLeft:30,
+    marginBottom:18
   },
   albumsContainer: {
     flexDirection: 'row',
@@ -233,11 +327,11 @@ const styles = StyleSheet.create({
   },
   album: {
     width: '48%',
-    marginVertical: 8,
+    marginVertical: -12,
   },
   albumImage: {
     width: '100%',
-    height: 150,
+    height: 180,
     borderRadius: 8,
   },
   albumText: {
@@ -249,37 +343,41 @@ const styles = StyleSheet.create({
   membersText: {
     fontSize: 14,
     color: '#666',
-    fontFamily:'serif',
+    fontFamily: 'serif',
   },
   buttonContainer: {
     flexDirection: 'row',
-    alignItems:'center',
+    alignItems: 'center',
     // justifyContent: 'space-between',
     marginBottom: 10,
-    marginLeft:68,
+    marginLeft: 68,
   },
   button: {
     padding: 10,
-    margin: 5,
+    margin: 1,
+    marginLeft:39,
     borderRadius: 5,
+    width:100,
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily:'serif'
+    marginLeft:25,
+    fontFamily: 'serif',
   },
   imageContainer: {
     flexDirection: 'row',
-    // alignItems: 'space-between', 
+    // alignItems: 'space-between',
     justifyContent: 'space-between',
-    padding: 1,
-    
+    padding: 0,
   },
   image: {
     width: 150,
     height: 150,
-    marginVertical: 10, // Space between images vertically
-  },
+    marginTop:120,
+    marginHorizontal: -12, 
+    marginVertical: 0, 
+ },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',

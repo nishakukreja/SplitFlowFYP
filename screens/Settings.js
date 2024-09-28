@@ -1,33 +1,68 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { StackActions, useNavigation } from "@react-navigation/native";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import FeatherIcon from "react-native-vector-icons/Feather";
 import MaterialIconsIcon from "react-native-vector-icons/MaterialIcons";
+import { useSelector } from "react-redux";
+import { compose } from "@reduxjs/toolkit";
 
 const Settings = () => {
   const navigation = useNavigation();
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
+  const {currentUser} = useSelector((state)=>state.user);
+
+
   const handleOptionPress = (screen) => {
     if (screen === 'TwoFactorAuthentication') {
-      setIs2FAEnabled(true);
-    }
-    if (screen) {
+      // setIs2FAEnabled(true);
+
+      console.log("currentUser.isTwoFactorEnabled: ", currentUser.isTwoFactorEnabled)
+
+      if(currentUser.isTwoFactorEnabled){
+
+        console.log("45o87")
+
+        navigation.navigate("Disable2FA")
+
+
+
+      }
+      else{
       navigation.navigate(screen, { is2FAEnabled });
-    } else {
-     
+
+      }
     }
+    else{
+
+    
+    if (screen) {
+      console.log("2")
+
+      if(screen === "Login"){
+        navigation.navigate(screen);
+        navigation.dispatch(StackActions.replace('Login'));
+
+
+      }
+      else{
+        navigation.navigate(screen);
+
+      }
+
+    } 
+  }
   };
 
   const options = [
     { icon: 'edit', title: 'AccountDetail', screen: 'AccountDetail' },
     { icon: 'settings', title: 'Two Factor Authentication', screen: 'TwoFactorAuthentication' },
     { icon: 'credit-card', title: 'Payment', screen: 'PaymentScreen' },
-    { icon: 'privacy-tip', title: 'Privacy and Policy' , screen: 'PrivacyAndPolicy'},
+    { icon: 'privacy-tip', title: 'Created Task' , screen: 'ViewTaskScreen'},
     { icon: 'edit', title: 'EditProfile', screen: 'EditProfile' },
     { icon: 'notifications-on', title: 'Notification', screen: 'Notification' },
-    { icon: 'sign-out', title: 'Logout' },
+    { icon: 'sign-out', title: 'Logout', screen:"Login" },
   ];
 
   return (

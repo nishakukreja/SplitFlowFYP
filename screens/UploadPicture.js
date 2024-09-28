@@ -1,28 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, Modal, Pressable, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import Custombutton from '../components/Custombutton';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { useNavigation } from '@react-navigation/native';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useNavigation} from '@react-navigation/native';
 import logoImage from '../assets/images/logo.png';
 import axios from 'axios';
-import { allowedAddresses } from '../IPConfig';
+import {allowedAddresses} from '../IPConfig';
 
-const UploadPicture = ({ route }) => {
+const UploadPicture = ({route}) => {
   const navigation = useNavigation();
-  const [choosePictureModalVisible, setChoosePictureModalVisible] = useState(false);
+  const [choosePictureModalVisible, setChoosePictureModalVisible] =
+    useState(false);
   const [thankYouModalVisible, setThankYouModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState(null);
-  const [selectedImageBase64, setSelectedImageBase64] = useState("");
+  const [selectedImageBase64, setSelectedImageBase64] = useState('');
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [apiResponse, setApiResponse] = useState(null); // Define apiResponse state
 
-  const {
-    personalDetails,
-    accountDetails,
-    genderDetails,
-    interestDetails
-  } = route.params;
+  const {personalDetails, accountDetails, genderDetails, interestDetails} =
+    route.params;
 
   const openCamera = async () => {
     try {
@@ -62,7 +67,7 @@ const UploadPicture = ({ route }) => {
       } else if (response.errorMessage) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else {
-        console.log("image data: ", response.assets[0].base64);
+        console.log('image data: ', response.assets[0].base64);
         setSelectedImageBase64(response.assets[0].base64);
         setSelectedImageUri(response.assets[0].uri);
         setIsImageSelected(true);
@@ -101,28 +106,31 @@ const UploadPicture = ({ route }) => {
         interests: interestDetails.preferences,
         isImageSelected: isImageSelected,
         imageBase64: selectedImageBase64,
-      }
+      };
 
-      console.log("compiled upload obj: ", uploadObj);
+      console.log('compiled upload obj: ', uploadObj);
 
-      const apiResponse = await axios.post(`${allowedAddresses.ip}/auth/user/sign-up`, uploadObj);
+      const apiResponse = await axios.post(
+        `${allowedAddresses.ip}/auth/user/sign-up`,
+        uploadObj,
+      );
       setApiResponse(apiResponse); // Store api response in state
 
       if (apiResponse.data.status === 200) {
-        console.log("ok aa");
+        console.log('ok aa');
         setThankYouModalVisible(true);
       }
     } catch (error) {
-      console.log("error: ", error);
+      console.log('error: ', error);
     }
-  }
+  };
 
   const navigateToHomeTabs = async () => {
     hideThankYouModal();
     if (apiResponse) {
       navigation.navigate('HomeTabs', {
         screen: 'Home',
-        params: { user: apiResponse.data.data.user }
+        params: {user: apiResponse.data.data.user},
       });
     }
   };
@@ -132,30 +140,45 @@ const UploadPicture = ({ route }) => {
   };
 
   const onOKPress = () => {
-    if (apiResponse) {
-      navigation.navigate('HomeTabs', {
-        screen: 'Home',
-        params: { user: apiResponse.data.data.user }
-      });
-    }
-  }
+    // if (apiResponse) {
+    //   navigation.navigate('HomeTabs', {
+    //     screen: 'Home',
+    //     params: {user: apiResponse.data.data.user},
+    //   });
+
+    navigation.navigate('Login');
+    //dis
+
+    // ip change kar navigation kare chaid aa maa
+
+    // }
+  };
 
   return (
     <View style={styles.container}>
       <Image source={logoImage} style={styles.logo} />
       {selectedImageUri ? (
-        <TouchableOpacity onPress={() => { showChoosePictureModal(); }}>
-          <Image source={{ uri: selectedImageUri }} style={styles.imagePreview} />
+        <TouchableOpacity
+          onPress={() => {
+            showChoosePictureModal();
+          }}>
+          <Image source={{uri: selectedImageUri}} style={styles.imagePreview} />
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.imagePreview} onPress={() => { showChoosePictureModal(); }}>
+        <TouchableOpacity
+          style={styles.imagePreview}
+          onPress={() => {
+            showChoosePictureModal();
+          }}>
           <Text style={styles.placeholderText}>Add Photo</Text>
         </TouchableOpacity>
       )}
 
       <Custombutton
         text={loading ? 'Loading...' : 'Upload'}
-        onPress={() => { registerUser(); }}
+        onPress={() => {
+          registerUser();
+        }}
         style={styles.uploadButton}
       />
 
@@ -166,8 +189,14 @@ const UploadPicture = ({ route }) => {
       <Custombutton
         text={
           <Text>
-            <Text>Already have an account?{' '}</Text>
-            <Text style={{ fontWeight: 'bold', color: '#6146C6', fontSize: 15, textDecorationLine: 'underline' }}>
+            <Text>Already have an account? </Text>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                color: '#6146C6',
+                fontSize: 15,
+                textDecorationLine: 'underline',
+              }}>
               Login
             </Text>
           </Text>
@@ -181,8 +210,7 @@ const UploadPicture = ({ route }) => {
         animationType="slide"
         transparent={true}
         visible={choosePictureModalVisible}
-        onRequestClose={hideChoosePictureModal}
-      >
+        onRequestClose={hideChoosePictureModal}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Choose an Option</Text>
           <Pressable
@@ -190,8 +218,7 @@ const UploadPicture = ({ route }) => {
             onPress={() => {
               openCamera();
               hideChoosePictureModal();
-            }}
-          >
+            }}>
             <Text style={styles.optionText}>Take a Photo</Text>
           </Pressable>
           <Pressable
@@ -199,11 +226,12 @@ const UploadPicture = ({ route }) => {
             onPress={() => {
               openGallery();
               hideChoosePictureModal();
-            }}
-          >
+            }}>
             <Text style={styles.optionText}>Choose from Gallery</Text>
           </Pressable>
-          <Pressable style={styles.closeButton} onPress={hideChoosePictureModal}>
+          <Pressable
+            style={styles.closeButton}
+            onPress={hideChoosePictureModal}>
             <Text style={styles.closeButtonText}>Cancel</Text>
           </Pressable>
         </View>
@@ -213,11 +241,12 @@ const UploadPicture = ({ route }) => {
         animationType="fade"
         transparent={true}
         visible={thankYouModalVisible}
-        onRequestClose={hideThankYouModal}
-      >
+        onRequestClose={hideThankYouModal}>
         <View style={styles.thankYouModalContainer}>
           <Text style={styles.thankYouTitle}>Thank You!</Text>
-          <Text style={styles.thankYouText}>You have successfully created your account.</Text>
+          <Text style={styles.thankYouText}>
+            You have successfully created your account.
+          </Text>
           <Pressable style={styles.okButton} onPress={onOKPress}>
             <Text style={styles.okButtonText}>OK</Text>
           </Pressable>
@@ -336,7 +365,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-    fontFamily: "serif",
+    fontFamily: 'serif',
   },
   thankYouTitle: {
     fontSize: 24,

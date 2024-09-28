@@ -31,7 +31,7 @@ const BackupScreen = () => {
   };
 
   const navigateToVerification = (method) => {
-    navigation.navigate('TwoFactorVerification', { method });
+    navigation.navigate('TwoFactorVerification', { method, email });
   };
 
   return (

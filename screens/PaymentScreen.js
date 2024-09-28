@@ -13,29 +13,15 @@ const PaymentScreen = ({ navigation }) => {
       <View style={styles.menu}>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Balance')}>
           <Fontisto name="money-symbol" color="#fff" size={40} />
-          <Text style={styles.menuText}>Payment</Text>
+          <Text style={styles.menuText}>Online</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => { /* Navigation for Transactions screen */ }}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('StripeScreen')}>
           <Icon name="exchange" type="font-awesome" color="#fff" size={40} />
-          <Text style={styles.menuText}>Transactions</Text>
+          <Text style={styles.menuText}>Stripe</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.menuItem} onPress={() => { /* Navigation for another screen */ }
-          {/* <Icon name="exchange" type="font-awesome" color="#fff" size={40} />
-          <Text style={styles.menuText}>Transactions</Text> */}
-        {/* </TouchableOpacity> */}
-        {/* <TouchableOpacity style={styles.menuItem} onPress={() => { /* Navigation for another screen */ }
-          {/* <Icon name="exchange" type="font-awesome" color="#fff" size={40} /> */}
+       
           <Text style={styles.menuText}>Transactions</Text>
-        {/* </TouchableOpacity>  */}
-        {/* <TouchableOpacity style={styles.menuItem} onPress={() => { /* Navigation for another screen */ }
-          {/* <Icon name="exchange" type="font-awesome" color="#fff" size={40} />
-          <Text style={styles.menuText}>Transactions</Text>
-        </TouchableOpacity> */}
-        {/* {/* <TouchableOpacity style={styles.menuItem} onPress={() => { /* Navigation for another screen */ } 
-          {/* <Icon name="exchange" type="font-awesome" color="#fff" size={40} />
-          <Text style={styles.menuText}>Transactions</Text>
-        </TouchableOpacity> */} 
-        {/* Add other menu items similarly */}
+       
       </View>
     </SafeAreaView>
   );

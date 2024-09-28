@@ -1,18 +1,17 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import React from 'react';
+import {View, Text, Image, StyleSheet} from 'react-native';
 
-const ConversationCard = ({ item }) => {
+const ConversationCard = ({item}) => {
   return (
     <View
       style={{
         borderWidth: 1,
-        borderColor: "lightgray",
-        marginBottom: "4%",
+        borderColor: 'lightgray',
+        marginBottom: '4%',
         borderRadius: 7,
-      }}
-    >
+      }}>
       <View style={styles.container}>
-        <Image source={{ uri: item.imageUri }} style={styles.profileImage} />
+        <Image source={{uri: item.imageUri}} style={styles.profileImage} />
         <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.username}>{item.name}</Text>
@@ -27,8 +26,8 @@ const ConversationCard = ({ item }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
     borderRadius: 7,
   },
@@ -42,19 +41,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
   username: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   lastMessageTime: {
-    color: "#555",
+    color: '#555',
   },
   lastMessage: {
-    color: "#888",
+    color: '#888',
   },
 });
 
